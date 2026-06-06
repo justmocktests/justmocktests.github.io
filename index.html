@@ -1,582 +1,1500 @@
-/*********************************************************
- JUST MOCK TESTS - Enhanced Production Backend
- Version 3.0 - Sandbox Mode Ready
- Google Apps Script Backend Engine
- *********************************************************/
-
-const CACHE_SECONDS = 1800;
-
-/*********************************************************
- WEB APP - CORS Enabled
- *********************************************************/
-
-function doGet() {
-  return HtmlService
-    .createTemplateFromFile("Index")
-    .evaluate()
-    .setTitle("Just Mock Tests")
-    .setXFrameOptionsMode(
-      HtmlService.XFrameOptionsMode.ALLOWALL
-    );
-}
-
-/*********************************************************
- INCLUDE HTML FILES
- *********************************************************/
-
-function include(filename) {
-  return HtmlService
-    .createHtmlOutputFromFile(filename)
-    .getContent();
-}
-
-/*********************************************************
- ADMIN CONFIG READER
- Reads from ADMIN_CONFIG sheet
- Column A = Key, Column B = Value
- *********************************************************/
-
-function getConfig() {
-  try {
-    const ss = SpreadsheetApp.getActive();
-    const sheet = ss.getSheetByName("ADMIN_CONFIG");
-    
-    if (!sheet) {
-      Logger.log("⚠️ ADMIN_CONFIG sheet not found");
-      return getDefaultConfig();
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Just Mock Tests - Premium Practice Exams</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  
+  <style>
+    /************************************************
+    RESET & BASE
+    ************************************************/
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
     
-    const values = sheet.getDataRange().getValues();
-    const config = {};
+    html {
+      scroll-behavior: smooth;
+    }
     
-    // Skip header row (row 1)
-    for (let i = 1; i < values.length; i++) {
-      const row = values[i];
-      if (row[0] && row[0].toString().trim() !== "") {
-        const key = row[0].toString().trim();
-        const value = row[1] ? row[1].toString().trim() : "";
-        config[key] = value;
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f7fb;
+      color: #1e293b;
+      min-height: 100vh;
+    }
+    
+    /************************************************
+    CONTAINER
+    ************************************************/
+    .container {
+      max-width: 1300px;
+      margin: auto;
+      padding: 25px;
+    }
+    
+    .section {
+      margin-top: 40px;
+    }
+    
+    .section-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: #0f172a;
+      padding-bottom: 10px;
+      border-bottom: 3px solid #2563eb;
+    }
+    
+    /************************************************
+    HEADER
+    ************************************************/
+    .hero {
+      background: #0f172a;
+      color: white;
+      text-align: center;
+      padding: 60px 25px;
+    }
+    
+    .hero h1 {
+      font-size: 46px;
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+    
+    .hero p {
+      font-size: 18px;
+      opacity: 0.9;
+    }
+    
+    .disclaimer {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #cbd5e1;
+    }
+    
+    /************************************************
+    SANDBOX BANNER
+    ************************************************/
+    .sandbox-banner {
+      background: #dbeafe;
+      border-left: 5px solid #2563eb;
+      padding: 15px 20px;
+      margin-bottom: 20px;
+      border-radius: 6px;
+      color: #1e40af;
+      font-weight: 600;
+      text-align: center;
+    }
+    
+    /************************************************
+    BUTTONS
+    ************************************************/
+    .btn {
+      border: none;
+      cursor: pointer;
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-weight: 600;
+      transition: 0.2s;
+      font-size: 15px;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+    
+    .btn-primary {
+      background: #2563eb;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #1e40af;
+    }
+    
+    .btn-success {
+      background: #16a34a;
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background: #15803d;
+    }
+    
+    .btn-secondary {
+      background: #64748b;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background: #475569;
+    }
+    
+    .full-width {
+      width: 100%;
+    }
+    
+    /************************************************
+    CARDS
+    ************************************************/
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    
+    .exam-card {
+      background: white;
+      padding: 22px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      border: 2px solid transparent;
+    }
+    
+    .exam-card:hover {
+      transform: translateY(-4px);
+      border-color: #2563eb;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.2);
+    }
+    
+    .exam-card h3 {
+      font-size: 18px;
+      line-height: 1.4;
+    }
+    
+    /************************************************
+    CUSTOM BUILDER
+    ************************************************/
+    .custom-builder {
+      background: white;
+      padding: 25px;
+      border-radius: 14px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      margin-bottom: 30px;
+    }
+    
+    .custom-builder h2 {
+      margin-bottom: 15px;
+      color: #0f172a;
+    }
+    
+    .topic-checklist {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+      margin: 20px 0;
+    }
+    
+    .topic-item {
+      background: #f8fafc;
+      border-radius: 10px;
+      padding: 12px;
+      border: 1px solid #e2e8f0;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    
+    .topic-item:hover {
+      border-color: #2563eb;
+      background: #dbeafe;
+    }
+    
+    /************************************************
+    INPUTS
+    ************************************************/
+    .input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
+    }
+    
+    .input:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    
+    /************************************************
+    MODAL
+    ************************************************/
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.55);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 99999;
+      display: none;
+    }
+    
+    .modal-backdrop.active {
+      display: flex;
+    }
+    
+    .modal-window {
+      width: 90%;
+      max-width: 850px;
+      background: white;
+      border-radius: 14px;
+      overflow: hidden;
+      animation: slideUp 0.3s ease;
+    }
+    
+    @keyframes slideUp {
+      from {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
       }
     }
     
-    Logger.log("✅ Config loaded: " + JSON.stringify(config));
-    return config;
+    .modal-header {
+      background: #0f172a;
+      color: white;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
     
-  } catch (error) {
-    Logger.log("❌ Error reading ADMIN_CONFIG: " + error.toString());
-    return getDefaultConfig();
-  }
-}
-
-/*********************************************************
- DEFAULT CONFIG - Fallback if ADMIN_CONFIG missing
- *********************************************************/
-
-function getDefaultConfig() {
-  return {
-    SITE_NAME: "Just Mock Tests",
-    TAGLINE: "No Email, No Phone, No Spam — Just Net Practice for you",
-    PRICE_25: "10",
-    PRICE_50: "20",
-    PRICE_100: "40",
-    SANDBOX_MODE: "true",
-    PAYMENT_MODE: "SANDBOX",
-    BUSINESS_NAME: "Just Mock Tests"
-  };
-}
-
-/*********************************************************
- CACHE RESET
- *********************************************************/
-
-function clearAppCache() {
-  CacheService.getScriptCache().removeAll([
-    "PORTAL_DATA",
-    "CONFIG_CACHE"
-  ]);
-  Logger.log("✅ App cache cleared");
-  return true;
-}
-
-/*********************************************************
- HOMEPAGE DATA - CMS Layout
- *********************************************************/
-
-function getPortalData() {
-  const cache = CacheService.getScriptCache();
-  const cached = cache.get("PORTAL_DATA");
-  
-  if (cached) {
-    return JSON.parse(cached);
-  }
-  
-  try {
-    const ss = SpreadsheetApp.getActive();
-    const sheets = ss.getSheets();
+    .modal-header button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+    }
     
-    const exams = [];
-    const topics = [];
-    const policies = [];
+    .modal-content {
+      padding: 20px;
+      max-height: 75vh;
+      overflow-y: auto;
+    }
     
-    sheets.forEach(sheet => {
-      const name = sheet.getName();
-      
-      if (name.startsWith("exam_")) {
-        exams.push({
-          sheet: name,
-          label: cleanLabel(name)
-        });
+    /************************************************
+    QUIZ
+    ************************************************/
+    .quiz-wrapper {
+      max-width: 1000px;
+      margin: auto;
+    }
+    
+    .quiz-topbar {
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    
+    .timer {
+      color: #dc2626;
+      font-size: 26px;
+      font-weight: 700;
+    }
+    
+    .question-card {
+      background: white;
+      border-radius: 14px;
+      padding: 25px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    
+    .question-text {
+      font-size: 22px;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    
+    .question-image {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    
+    .option {
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    
+    .option:hover {
+      background: #f8fafc;
+    }
+    
+    .option.selected {
+      background: #dbeafe;
+      border: 2px solid #2563eb;
+    }
+    
+    .quiz-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      gap: 10px;
+    }
+    
+    /************************************************
+    PALETTE
+    ************************************************/
+    .palette {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+      gap: 8px;
+      margin-top: 25px;
+    }
+    
+    .palette-btn {
+      border: none;
+      height: 45px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+    
+    .palette-unanswered {
+      background: #e5e7eb;
+      color: #4b5563;
+    }
+    
+    .palette-answered {
+      background: #16a34a;
+      color: white;
+    }
+    
+    /************************************************
+    SCORECARD
+    ************************************************/
+    .score-wrapper {
+      max-width: 1100px;
+      margin: auto;
+    }
+    
+    .score-summary {
+      background: white;
+      padding: 25px;
+      border-radius: 14px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    
+    .score-big {
+      font-size: 56px;
+      font-weight: 700;
+      color: #2563eb;
+    }
+    
+    .review-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 15px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      page-break-inside: avoid;
+    }
+    
+    .correct {
+      color: #16a34a;
+      font-weight: 700;
+    }
+    
+    .incorrect {
+      color: #dc2626;
+      font-weight: 700;
+    }
+    
+    /************************************************
+    LOADER
+    ************************************************/
+    .loader-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,0.8);
+      z-index: 999999;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .loader-overlay.active {
+      display: flex;
+    }
+    
+    .loader-box {
+      text-align: center;
+    }
+    
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 5px solid #d1d5db;
+      border-top: 5px solid #2563eb;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: auto;
+      margin-bottom: 15px;
+    }
+    
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    /************************************************
+    FOOTER
+    ************************************************/
+    .footer {
+      background: #0f172a;
+      color: white;
+      margin-top: 60px;
+      padding: 30px;
+      text-align: center;
+    }
+    
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 15px;
+    }
+    
+    .footer-links a {
+      cursor: pointer;
+      text-decoration: none;
+      color: #94a3b8;
+      transition: 0.2s;
+    }
+    
+    .footer-links a:hover {
+      color: white;
+    }
+    
+    /************************************************
+    NOTIFICATION
+    ************************************************/
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 10000;
+      animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateX(400px); }
+      to { transform: translateX(0); }
+    }
+    
+    .notification.success {
+      border-left: 4px solid #16a34a;
+      color: #15803d;
+    }
+    
+    .notification.error {
+      border-left: 4px solid #dc2626;
+      color: #991b1b;
+    }
+    
+    /************************************************
+    PDF PRINT
+    ************************************************/
+    @media print {
+      body {
+        background: white;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .review-card {
+        page-break-inside: avoid;
+      }
+    }
+    
+    /************************************************
+    RESPONSIVE
+    ************************************************/
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 34px;
       }
       
-      if (name.startsWith("topic_")) {
-        topics.push({
-          sheet: name,
-          label: cleanLabel(name)
-        });
+      .hero p {
+        font-size: 16px;
       }
       
-      if (name.startsWith("policy_")) {
-        policies.push({
-          sheet: name,
-          label: cleanLabel(name)
-        });
+      .section-title {
+        font-size: 22px;
       }
+      
+      .quiz-topbar {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .timer {
+        font-size: 22px;
+      }
+      
+      .question-text {
+        font-size: 18px;
+      }
+      
+      .quiz-nav {
+        flex-direction: column;
+      }
+      
+      .btn {
+        width: 100%;
+      }
+      
+      .card-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loaderOverlay" class="loader-overlay">
+    <div class="loader-box">
+      <div class="spinner"></div>
+      <div>Loading...</div>
+    </div>
+  </div>
+
+  <div id="modalRoot"></div>
+
+  <div id="app"></div>
+
+  <script>
+
+    /*****************************************************
+     GLOBAL APP STATE
+    *****************************************************/
+    
+    const APP = {
+      portalData: null,
+      config: {},
+      sessionId: null,
+      candidateName: "",
+      paymentInfo: null,
+      currentMode: "",
+      currentExam: "",
+      currentTopics: [],
+      currentLength: 0,
+      currentQuestions: [],
+      currentQuestionIndex: 0,
+      currentAnswers: {},
+      startTime: null,
+      countdown: 0,
+      countdownInterval: null,
+      result: null,
+      APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyt4Riap1dC7V_kwXCErNtiAwabcAUfpt1BuMlYGUT7ZNTHAEqWpNjrnOhGk68xgA0O/exec"
+    };
+
+    const SESSION_KEY = "JMT_SESSION";
+    const QUESTION_KEY = "JMT_QUESTIONS";
+
+    /*****************************************************
+     INITIALIZATION
+    *****************************************************/
+
+    document.addEventListener("DOMContentLoaded", function() {
+      bootApplication();
     });
-    
-    const config = getConfig();
-    
-    const data = {
-      config: config,
-      exams: exams.sort((a, b) => a.label.localeCompare(b.label)),
-      topics: topics.sort((a, b) => a.label.localeCompare(b.label)),
-      policies: policies.sort((a, b) => a.label.localeCompare(b.label))
-    };
-    
-    cache.put("PORTAL_DATA", JSON.stringify(data), CACHE_SECONDS);
-    Logger.log("✅ Portal data loaded and cached");
-    
-    return data;
-    
-  } catch (error) {
-    Logger.log("❌ Error loading portal data: " + error.toString());
-    return {
-      config: getDefaultConfig(),
-      exams: [],
-      topics: [],
-      policies: []
-    };
-  }
-}
 
-/*********************************************************
- LABEL FORMATTER
- *********************************************************/
-
-function cleanLabel(value) {
-  return value
-    .replace(/^exam_/, "")
-    .replace(/^topic_/, "")
-    .replace(/^policy_/, "")
-    .replace(/_/g, " ")
-    .trim();
-}
-
-/*********************************************************
- POLICY READER
- *********************************************************/
-
-function getPolicy(sheetName) {
-  try {
-    const ss = SpreadsheetApp.getActive();
-    const sheet = ss.getSheetByName(sheetName);
-    
-    if (!sheet) {
-      return "Policy not found.";
+    function bootApplication() {
+      recoverSession();
+      loadPortalData();
     }
-    
-    const values = sheet
-      .getDataRange()
-      .getDisplayValues()
-      .flat()
-      .filter(v => v && v.toString().trim() !== "")
-      .join("\n\n");
-    
-    Logger.log("✅ Policy loaded: " + sheetName);
-    return values || "No content available.";
-    
-  } catch (error) {
-    Logger.log("❌ Error reading policy: " + error.toString());
-    return "Error loading policy content.";
-  }
-}
 
-/*********************************************************
- QUESTION LOADER - Enhanced with proper column mapping
- 
- Column structure (from user's sheet):
- A = QUESTION_ID
- B = QUESTION
- C = IMAGE_URL
- D = OPTION_A
- E = OPTION_B
- F = OPTION_C
- G = OPTION_D
- H = CORRECT_ANSWER
- I = EXPLANATION
- *********************************************************/
+    /*****************************************************
+     LOADER CONTROL
+    *****************************************************/
 
-function readQuestionSheet(sheetName) {
-  try {
-    const ss = SpreadsheetApp.getActive();
-    const sheet = ss.getSheetByName(sheetName);
-    
-    if (!sheet) {
-      Logger.log("⚠️ Sheet not found: " + sheetName);
-      return [];
+    function showLoader() {
+      document.getElementById("loaderOverlay").classList.add("active");
     }
-    
-    const dataRange = sheet.getDataRange();
-    const rows = dataRange.getValues();
-    
-    if (rows.length < 2) {
-      Logger.log("⚠️ Sheet empty: " + sheetName);
-      return [];
+
+    function hideLoader() {
+      document.getElementById("loaderOverlay").classList.remove("active");
     }
-    
-    // Skip header row (row 0)
-    const questions = [];
-    
-    for (let i = 1; i < rows.length; i++) {
-      const row = rows[i];
+
+    /*****************************************************
+     FETCH PORTAL DATA
+    *****************************************************/
+
+    function loadPortalData() {
+      showLoader();
       
-      // Skip if question text is empty
-      if (!row[1] || row[1].toString().trim() === "") {
-        continue;
+      google.script.run
+        .withSuccessHandler(function(data) {
+          APP.portalData = data;
+          APP.config = data.config || {};
+          hideLoader();
+          renderHome();
+          attemptResumeQuiz();
+        })
+        .withFailureHandler(function(err) {
+          hideLoader();
+          showNotification("Failed to load app: " + err, "error");
+          console.error(err);
+        })
+        .getPortalData();
+    }
+
+    /*****************************************************
+     HOME RENDER
+    *****************************************************/
+
+    function renderHome() {
+      const siteName = APP.config.SITE_NAME || "Just Mock Tests";
+      const tagline = APP.config.TAGLINE || "No Email, No Phone, No Spam — Just Net Practice for you";
+      const sandboxMode = APP.config.SANDBOX_MODE === "true" || APP.config.SANDBOX_MODE === true;
+
+      let html = `
+        <div class="hero">
+          <h1>${siteName}</h1>
+          <p>${tagline}</p>
+          <div class="disclaimer">
+            Practice tests only. Not affiliated with any government body.
+          </div>
+        </div>
+
+        <div class="container">
+      `;
+
+      if (sandboxMode) {
+        html += `
+          <div class="sandbox-banner">
+            ⚠️ SANDBOX MODE — Testing Only (No Payment Required)
+          </div>
+        `;
       }
-      
-      // Extract correct answer (could be A, B, C, D or 1, 2, 3, 4)
-      let correctAnswer = row[7] ? row[7].toString().trim().toUpperCase() : "A";
-      
-      // Convert numeric answers to letters if needed
-      if (correctAnswer === "1") correctAnswer = "A";
-      if (correctAnswer === "2") correctAnswer = "B";
-      if (correctAnswer === "3") correctAnswer = "C";
-      if (correctAnswer === "4") correctAnswer = "D";
-      
-      const question = {
-        id: row[0] ? row[0].toString().trim() : `q_${i}`,
-        question: row[1].toString().trim(),
-        imageUrl: row[2] ? row[2].toString().trim() : "",
-        options: [
-          row[3] ? row[3].toString().trim() : "",
-          row[4] ? row[4].toString().trim() : "",
-          row[5] ? row[5].toString().trim() : "",
-          row[6] ? row[6].toString().trim() : ""
-        ],
-        answer: correctAnswer,
-        explanation: row[8] ? row[8].toString().trim() : ""
-      };
-      
-      // Validate all options are present
-      if (question.options.every(opt => opt !== "")) {
-        questions.push(question);
+
+      html += `
+          <div class="custom-builder">
+            <h2>🎛️ Customise Your Test</h2>
+            <p>Build your own test by combining multiple topics.</p>
+            <br>
+            <button class="btn btn-primary full-width" onclick="openCustomBuilder()">
+              Create Custom Test
+            </button>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Full Mock Exams Available</div>
+            <div id="examGrid" class="card-grid"></div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Individual Topics Practice</div>
+            <div id="topicGrid" class="card-grid"></div>
+          </div>
+
+          <div id="footerContainer"></div>
+        </div>
+      `;
+
+      document.getElementById("app").innerHTML = html;
+      renderExamCards();
+      renderTopicCards();
+      renderFooter();
+    }
+
+    /*****************************************************
+     RENDER EXAM CARDS
+    *****************************************************/
+
+    function renderExamCards() {
+      const holder = document.getElementById("examGrid");
+      let html = "";
+
+      if (APP.portalData.exams && APP.portalData.exams.length > 0) {
+        APP.portalData.exams.forEach(exam => {
+          html += `
+            <div class="exam-card" onclick="selectTest('${exam.sheet}', '${exam.label}', 'EXAM')">
+              <h3>${exam.label}</h3>
+            </div>
+          `;
+        });
       } else {
-        Logger.log("⚠️ Skipping incomplete question at row " + (i + 1));
+        html = "<p>No exams available</p>";
+      }
+
+      holder.innerHTML = html;
+    }
+
+    /*****************************************************
+     RENDER TOPIC CARDS
+    *****************************************************/
+
+    function renderTopicCards() {
+      const holder = document.getElementById("topicGrid");
+      let html = "";
+
+      if (APP.portalData.topics && APP.portalData.topics.length > 0) {
+        APP.portalData.topics.forEach(topic => {
+          html += `
+            <div class="exam-card" onclick="selectTest('${topic.sheet}', '${topic.label}', 'TOPIC')">
+              <h3>${topic.label}</h3>
+            </div>
+          `;
+        });
+      } else {
+        html = "<p>No topics available</p>";
+      }
+
+      holder.innerHTML = html;
+    }
+
+    /*****************************************************
+     RENDER FOOTER
+    *****************************************************/
+
+    function renderFooter() {
+      let html = `<div class="footer">
+        <div class="footer-links">`;
+
+      if (APP.portalData.policies && APP.portalData.policies.length > 0) {
+        APP.portalData.policies.forEach(policy => {
+          html += `<a onclick="openPolicy('${policy.sheet}')">${policy.label}</a>`;
+        });
+      }
+
+      html += `
+        </div>
+        <br>
+        <div>© ${new Date().getFullYear()} ${APP.config.SITE_NAME || 'Just Mock Tests'}</div>
+      </div>`;
+
+      document.getElementById("footerContainer").innerHTML = html;
+    }
+
+    /*****************************************************
+     TEST SELECTION
+    *****************************************************/
+
+    function selectTest(sheetName, label, mode) {
+      APP.currentExam = sheetName;
+      APP.currentTopics = [sheetName];
+      APP.currentMode = mode;
+
+      const html = `
+        <h3>Select Test Length</h3>
+        <br>
+        <button class="btn btn-primary full-width" onclick="selectLength(25)">
+          Take a 25 Question Test
+        </button>
+        <br><br>
+        <button class="btn btn-primary full-width" onclick="selectLength(50)">
+          Take a 50 Question Test
+        </button>
+        <br><br>
+        <button class="btn btn-primary full-width" onclick="selectLength(100)">
+          Take a 100 Question Test
+        </button>
+      `;
+
+      openModal("Choose Test Length", html);
+    }
+
+    function selectLength(length) {
+      APP.currentLength = length;
+      closeModal();
+      setTimeout(openInstructionGateway, 300);
+    }
+
+    /*****************************************************
+     INSTRUCTION GATEWAY
+    *****************************************************/
+
+    function openInstructionGateway() {
+      const amount = getPriceForCount(APP.currentLength);
+
+      const html = `
+        <h3>Test Instructions</h3>
+        <br>
+        <p>Selected Questions: <b>${APP.currentLength}</b></p>
+        <br>
+        <p>Upon submission, a printable PDF scorecard will download directly to your desktop.</p>
+        <br>
+        <div style="background: #eff6ff; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
+          <strong>Price: ₹${amount}</strong>
+        </div>
+        <br>
+        <input id="candidateName" class="input" placeholder="Full Name" maxlength="50">
+        <br><br>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <input type="checkbox" id="termsCheck">
+          <label style="margin: 0;">I Agree To Terms & Conditions</label>
+        </div>
+        <br>
+        <button class="btn btn-success full-width" onclick="proceedToPayment()">
+          Proceed To Pay
+        </button>
+      `;
+
+      openModal("Instructions", html);
+    }
+
+    function getPriceForCount(count) {
+      const prices = {
+        25: Number(APP.config.PRICE_25 || 10),
+        50: Number(APP.config.PRICE_50 || 20),
+        100: Number(APP.config.PRICE_100 || 40)
+      };
+      return prices[count] || 0;
+    }
+
+    /*****************************************************
+     PAYMENT FLOW
+    *****************************************************/
+
+    function proceedToPayment() {
+      const name = document.getElementById("candidateName").value.trim();
+      const agreed = document.getElementById("termsCheck").checked;
+
+      if (!name) {
+        showNotification("Please enter your full name", "error");
+        return;
+      }
+
+      if (!agreed) {
+        showNotification("Please agree to Terms & Conditions", "error");
+        return;
+      }
+
+      APP.candidateName = name;
+      closeModal();
+
+      const sandboxMode = APP.config.SANDBOX_MODE === "true" || APP.config.SANDBOX_MODE === true;
+
+      if (sandboxMode) {
+        // Skip payment directly to quiz in sandbox mode
+        showNotification("✅ Sandbox Mode - Starting test...", "success");
+        setTimeout(launchExam, 1000);
+      } else {
+        // Show payment gateway in production mode
+        setTimeout(showPaymentGateway, 300);
       }
     }
-    
-    Logger.log("✅ Loaded " + questions.length + " questions from " + sheetName);
-    return questions;
-    
-  } catch (error) {
-    Logger.log("❌ Error reading sheet " + sheetName + ": " + error.toString());
-    return [];
-  }
-}
 
-/*********************************************************
- FISHER-YATES SHUFFLE
- Ensures unpredictable question ordering
- *********************************************************/
+    function showPaymentGateway() {
+      const amount = getPriceForCount(APP.currentLength);
 
-function fisherYates(array) {
-  const arr = [...array];
-  
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  
-  return arr;
-}
+      const html = `
+        <h2>Sandbox Payment Gateway</h2>
+        <br>
+        <div style="background: #eff6ff; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
+          <strong>Amount Payable: ₹${amount}</strong>
+        </div>
+        <br>
+        <div style="text-align: center;">
+          <div style="width: 220px; height: 220px; background: #f3f4f6; border: 2px dashed #94a3b8; margin: auto; display: flex; align-items: center; justify-content: center; border-radius: 12px;">
+            QR CODE (Sandbox)
+          </div>
+        </div>
+        <br>
+        <div style="text-align: center; color: #6b7280;">
+          This is TEST MODE. No real payment is being collected.
+        </div>
+        <br>
+        <button class="btn btn-success full-width" onclick="confirmSandboxPayment()">
+          Confirm Payment
+        </button>
+      `;
 
-/*********************************************************
- EXAM GENERATOR
- Loads and shuffles questions from exam sheet
- *********************************************************/
-
-function generateExam(sheetName, count) {
-  try {
-    const questions = readQuestionSheet(sheetName);
-    
-    if (questions.length === 0) {
-      throw new Error("No questions found in " + sheetName);
+      openModal("Payment Gateway", html);
     }
-    
-    const shuffled = fisherYates(questions);
-    const result = shuffled.slice(0, count);
-    
-    Logger.log("✅ Generated exam: " + count + " questions from " + sheetName);
-    return result;
-    
-  } catch (error) {
-    Logger.log("❌ Error generating exam: " + error.toString());
-    return [];
-  }
-}
 
-/*********************************************************
- CUSTOM TEST GENERATOR
- Combines questions from multiple topics
- *********************************************************/
-
-function generateCustomTest(topics, count) {
-  try {
-    if (!Array.isArray(topics) || topics.length === 0) {
-      throw new Error("No topics selected");
-    }
-    
-    let pool = [];
-    
-    topics.forEach(topic => {
-      const questions = readQuestionSheet(topic);
-      pool = pool.concat(questions);
-    });
-    
-    if (pool.length === 0) {
-      throw new Error("No questions found in selected topics");
-    }
-    
-    const shuffled = fisherYates(pool);
-    const result = shuffled.slice(0, count);
-    
-    Logger.log("✅ Generated custom test: " + count + " questions from " + topics.length + " topics");
-    return result;
-    
-  } catch (error) {
-    Logger.log("❌ Error generating custom test: " + error.toString());
-    return [];
-  }
-}
-
-/*********************************************************
- RESULT CALCULATOR
- *********************************************************/
-
-function calculateResult(questions, answers) {
-  try {
-    let score = 0;
-    const review = [];
-    
-    questions.forEach((q, index) => {
-      const selected = answers[index];
-      const correct = selected === q.answer;
+    function confirmSandboxPayment() {
+      showLoader();
       
-      if (correct) {
-        score++;
+      google.script.run
+        .withSuccessHandler(function(response) {
+          hideLoader();
+          if (response.success) {
+            showNotification("✅ Payment Successful!", "success");
+            closeModal();
+            setTimeout(launchExam, 1500);
+          } else {
+            showNotification("❌ Payment failed", "error");
+          }
+        })
+        .verifySandboxPayment();
+    }
+
+    /*****************************************************
+     CUSTOM TEST BUILDER
+    *****************************************************/
+
+    function openCustomBuilder() {
+      let html = `
+        <h3>Create Custom Test</h3>
+        <br>
+        <label><strong>Question Length</strong></label>
+        <select id="customLength" class="input" style="margin-bottom: 20px;">
+          <option value="25">25 Questions</option>
+          <option value="50">50 Questions</option>
+          <option value="100">100 Questions</option>
+        </select>
+        <br>
+        <label><strong>Select Topics</strong></label>
+        <div class="topic-checklist">
+      `;
+
+      if (APP.portalData.topics && APP.portalData.topics.length > 0) {
+        APP.portalData.topics.forEach(topic => {
+          html += `
+            <div class="topic-item">
+              <input type="checkbox" class="customTopic" value="${topic.sheet}">
+              ${topic.label}
+            </div>
+          `;
+        });
       }
-      
-      review.push({
-        question: q.question,
-        imageUrl: q.imageUrl,
-        selected: selected || "Not Answered",
-        answer: q.answer,
-        explanation: q.explanation,
-        correct: correct
+
+      html += `
+        </div>
+        <br>
+        <button class="btn btn-success full-width" onclick="continueCustomBuilder()">
+          Continue
+        </button>
+      `;
+
+      openModal("Custom Test Builder", html);
+    }
+
+    function continueCustomBuilder() {
+      const topics = [];
+      document.querySelectorAll(".customTopic").forEach(cb => {
+        if (cb.checked) topics.push(cb.value);
       });
-    });
-    
-    const accuracy = questions.length === 0 
-      ? 0 
-      : Math.round((score / questions.length) * 100);
-    
-    const result = {
-      score: score,
-      totalQuestions: questions.length,
-      accuracy: accuracy,
-      review: review,
-      timestamp: new Date().toLocaleString('en-IN')
-    };
-    
-    Logger.log("✅ Result calculated: " + score + "/" + questions.length);
-    return result;
-    
-  } catch (error) {
-    Logger.log("❌ Error calculating result: " + error.toString());
-    return {
-      score: 0,
-      totalQuestions: 0,
-      accuracy: 0,
-      review: [],
-      error: error.toString()
-    };
-  }
-}
 
-/*********************************************************
- PAYMENT PROCESSING - SANDBOX
- *********************************************************/
+      if (topics.length === 0) {
+        showNotification("Select at least one topic", "error");
+        return;
+      }
 
-function createSandboxOrder(payload) {
-  try {
-    const config = getConfig();
-    
-    const priceMap = {
-      25: Number(config.PRICE_25 || 10),
-      50: Number(config.PRICE_50 || 20),
-      100: Number(config.PRICE_100 || 40)
-    };
-    
-    const amount = priceMap[payload.questionCount] || 0;
-    
-    const order = {
-      success: true,
-      orderId: "SANDBOX_" + Utilities.getUuid(),
-      amount: amount,
-      currency: "INR",
-      mode: "SANDBOX",
-      timestamp: new Date().toLocaleString('en-IN')
-    };
-    
-    Logger.log("✅ Sandbox order created: ₹" + amount);
-    return order;
-    
-  } catch (error) {
-    Logger.log("❌ Error creating order: " + error.toString());
-    return {
-      success: false,
-      error: error.toString()
-    };
-  }
-}
+      APP.currentTopics = topics;
+      APP.currentMode = "CUSTOM";
+      APP.currentLength = Number(document.getElementById("customLength").value);
 
-/*********************************************************
- PAYMENT VERIFICATION - SANDBOX
- *********************************************************/
+      closeModal();
+      setTimeout(openInstructionGateway, 300);
+    }
 
-function verifySandboxPayment() {
-  try {
-    const response = {
-      success: true,
-      paymentId: "PAY_" + Utilities.getUuid(),
-      mode: "SANDBOX",
-      timestamp: new Date().toLocaleString('en-IN')
-    };
-    
-    Logger.log("✅ Sandbox payment verified: " + response.paymentId);
-    return response;
-    
-  } catch (error) {
-    Logger.log("❌ Error verifying payment: " + error.toString());
-    return {
-      success: false,
-      error: error.toString()
-    };
-  }
-}
+    /*****************************************************
+     LAUNCH EXAM
+    *****************************************************/
 
-/*********************************************************
- DEBUG & TESTING FUNCTIONS
- *********************************************************/
+    function launchExam() {
+      showLoader();
 
-function testSheetConnection() {
-  try {
-    const ss = SpreadsheetApp.getActive();
-    const config = getConfig();
-    const portalData = getPortalData();
-    
-    return {
-      status: "✅ Connected",
-      spreadsheet: ss.getName(),
-      config: config,
-      examsFound: portalData.exams.length,
-      topicsFound: portalData.topics.length,
-      policiesFound: portalData.policies.length,
-      timestamp: new Date().toLocaleString('en-IN')
-    };
-    
-  } catch (error) {
-    return {
-      status: "❌ Error",
-      error: error.toString()
-    };
-  }
-}
+      if (APP.currentMode === "CUSTOM") {
+        google.script.run
+          .withSuccessHandler(function(questions) {
+            beginQuiz(questions);
+          })
+          .withFailureHandler(function(error) {
+            hideLoader();
+            showNotification("Failed to load questions: " + error, "error");
+          })
+          .generateCustomTest(APP.currentTopics, APP.currentLength);
+      } else {
+        google.script.run
+          .withSuccessHandler(function(questions) {
+            beginQuiz(questions);
+          })
+          .withFailureHandler(function(error) {
+            hideLoader();
+            showNotification("Failed to load questions: " + error, "error");
+          })
+          .generateExam(APP.currentExam, APP.currentLength);
+      }
+    }
 
-function debugLoadQuestions(sheetName) {
-  try {
-    const questions = readQuestionSheet(sheetName);
-    
-    return {
-      status: "✅ Success",
-      sheetName: sheetName,
-      totalQuestions: questions.length,
-      sampleQuestions: questions.slice(0, 3),
-      timestamp: new Date().toLocaleString('en-IN')
-    };
-    
-  } catch (error) {
-    return {
-      status: "❌ Error",
-      error: error.toString()
-    };
-  }
-}
+    /*****************************************************
+     BEGIN QUIZ
+    *****************************************************/
 
-function debugGenerateExam(sheetName, count) {
-  try {
-    const exam = generateExam(sheetName, count);
-    
-    return {
-      status: "✅ Success",
-      sheetName: sheetName,
-      requestedCount: count,
-      actualCount: exam.length,
-      sample: exam.slice(0, 2),
-      timestamp: new Date().toLocaleString('en-IN')
-    };
-    
-  } catch (error) {
-    return {
-      status: "❌ Error",
-      error: error.toString()
-    };
-  }
-}
+    function beginQuiz(questions) {
+      hideLoader();
 
-/*********************************************************
- EMAIL REPORTING (Future - Email Setup)
- *********************************************************/
+      if (!questions || questions.length === 0) {
+        showNotification("❌ No questions loaded. Check sheet data.", "error");
+        return;
+      }
 
-function sendDailyAdminReport() {
-  // TODO: Implement email reporting
-  // This will send daily analytics to admin email
-}
+      APP.sessionId = generateSessionId();
+      APP.currentQuestions = questions;
+      APP.currentQuestionIndex = 0;
+      APP.currentAnswers = {};
+      APP.startTime = Date.now();
+      APP.countdown = APP.currentLength * 60; // 1 minute per question
 
-function sendStudentResultEmail(studentEmail, studentName, result) {
-  // TODO: Implement student result email with PDF attachment
-}
+      saveSession();
+      renderQuizPage();
+      initializeQuiz();
+    }
 
-/*********************************************************
- LOGGING UTILITY
- *********************************************************/
+    /*****************************************************
+     QUIZ RENDERING
+    *****************************************************/
 
-function getRecentLogs() {
-  try {
-    const logs = [];
-    // This would fetch from a logging sheet in production
-    return logs;
-  } catch (error) {
-    return [];
-  }
-}
+    function renderQuizPage() {
+      const html = `
+        <div class="container">
+          <div class="quiz-wrapper">
+            <div class="quiz-topbar">
+              <div><strong>${APP.candidateName}</strong></div>
+              <div id="timerDisplay" class="timer">00:00</div>
+            </div>
+            <div id="questionContainer"></div>
+            <div id="paletteContainer"></div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("app").innerHTML = html;
+    }
+
+    function initializeQuiz() {
+      prepareQuestionOptions();
+      renderQuestion();
+      renderPalette();
+      startTimer();
+    }
+
+    /*****************************************************
+     QUESTION PREPARATION & RENDERING
+    *****************************************************/
+
+    function prepareQuestionOptions() {
+      APP.currentQuestions = APP.currentQuestions.map(q => {
+        const options = [...q.options];
+        for (let i = options.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [options[i], options[j]] = [options[j], options[i]];
+        }
+        q.scrambledOptions = options;
+        return q;
+      });
+    }
+
+    function renderQuestion() {
+      const q = APP.currentQuestions[APP.currentQuestionIndex];
+
+      let imageHtml = "";
+      if (q.imageUrl) {
+        imageHtml = `<img src="${q.imageUrl}" class="question-image" alt="Question image" onerror="this.style.display='none'">`;
+      }
+
+      let optionHtml = "";
+      q.scrambledOptions.forEach(option => {
+        const selected = APP.currentAnswers[APP.currentQuestionIndex] === option;
+        optionHtml += `
+          <div class="option ${selected ? 'selected' : ''}" onclick="selectAnswer('${option}')">
+            ${option}
+          </div>
+        `;
+      });
+
+      const html = `
+        <div class="question-card">
+          <div>Question ${APP.currentQuestionIndex + 1} of ${APP.currentQuestions.length}</div>
+          <br>
+          <div class="question-text">${q.question}</div>
+          ${imageHtml}
+          ${optionHtml}
+          <div class="quiz-nav">
+            <button class="btn btn-secondary" onclick="previousQuestion()" ${APP.currentQuestionIndex === 0 ? 'disabled' : ''}>Previous</button>
+            <button class="btn btn-primary" onclick="nextQuestion()">Next</button>
+            <button class="btn btn-success" onclick="confirmSubmit()">Submit Test</button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("questionContainer").innerHTML = html;
+    }
+
+    function selectAnswer(answer) {
+      APP.currentAnswers[APP.currentQuestionIndex] = answer;
+      saveSession();
+      renderQuestion();
+      renderPalette();
+    }
+
+    function nextQuestion() {
+      if (APP.currentQuestionIndex < APP.currentQuestions.length - 1) {
+        APP.currentQuestionIndex++;
+        saveSession();
+        renderQuestion();
+        renderPalette();
+      }
+    }
+
+    function previousQuestion() {
+      if (APP.currentQuestionIndex > 0) {
+        APP.currentQuestionIndex--;
+        saveSession();
+        renderQuestion();
+        renderPalette();
+      }
+    }
+
+    function renderPalette() {
+      let html = `<div class="palette">`;
+
+      APP.currentQuestions.forEach((q, index) => {
+        const answered = APP.currentAnswers[index] !== undefined;
+        html += `
+          <button class="palette-btn ${answered ? 'palette-answered' : 'palette-unanswered'}" onclick="jumpToQuestion(${index})">
+            ${index + 1}
+          </button>
+        `;
+      });
+
+      html += `</div>`;
+      document.getElementById("paletteContainer").innerHTML = html;
+    }
+
+    function jumpToQuestion(index) {
+      APP.currentQuestionIndex = index;
+      saveSession();
+      renderQuestion();
+      renderPalette();
+    }
+
+    /*****************************************************
+     TIMER
+    *****************************************************/
+
+    function startTimer() {
+      if (APP.countdownInterval) clearInterval(APP.countdownInterval);
+      updateTimerDisplay();
+
+      APP.countdownInterval = setInterval(() => {
+        APP.countdown--;
+        updateTimerDisplay();
+        saveSession();
+
+        if (APP.countdown <= 0) {
+          clearInterval(APP.countdownInterval);
+          submitQuiz();
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(APP.countdown / 60);
+      const secs = APP.countdown % 60;
+      const el = document.getElementById("timerDisplay");
+      if (el) {
+        el.innerText = String(mins).padStart(2, "0") + ":" + String(secs).padStart(2, "0");
+      }
+    }
+
+    /*****************************************************
+     SUBMIT QUIZ
+    *****************************************************/
+
+    function confirmSubmit() {
+      const answered = Object.keys(APP.currentAnswers).length;
+      const total = APP.currentQuestions.length;
+
+      const html = `
+        <p>Answered: <b>${answered}</b> of <b>${total}</b></p>
+        <br>
+        <button class="btn btn-success" onclick="finalSubmit()">Yes, Submit Test</button>
+      `;
+
+      openModal("Submit Test", html);
+    }
+
+    function finalSubmit() {
+      closeModal();
+      submitQuiz();
+    }
+
+    function submitQuiz() {
+      if (APP.countdownInterval) clearInterval(APP.countdownInterval);
+
+      showLoader();
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          hideLoader();
+          APP.result = result;
+          clearSession();
+          renderScorecardPage();
+        })
+        .calculateResult(APP.currentQuestions, Object.values(APP.currentAnswers));
+    }
+
+    /*****************************************************
+     SCORECARD PAGE
+    *****************************************************/
+
+    function renderScorecardPage() {
+      const result = APP.result;
+      const elapsedSeconds = Math.floor((Date.now() - APP.startTime) / 1000);
+      const mins = Math.floor(elapsedSeconds / 60);
+      const secs = elapsedSeconds % 60;
+
+      let html = `
+        <div class="container">
+          <div class="score-wrapper">
+            <div id="pdfArea">
+              <div class="score-summary">
+                <h1>🎉 Test Completed</h1>
+                <br>
+                <div>Candidate: <strong>${APP.candidateName}</strong></div>
+                <br>
+                <div>Questions: <strong>${result.totalQuestions}</strong></div>
+                <br>
+                <div>Time Elapsed: <strong>${mins}m ${secs}s</strong></div>
+                <br>
+                <div class="score-big">${result.score}/${result.totalQuestions}</div>
+                <br>
+                <div>Accuracy: <strong>${result.accuracy}%</strong></div>
+              </div>
+
+              <div style="margin-top: 30px;">
+                <h2>Question Review</h2>
+              </div>
+      `;
+
+      result.review.forEach((item, index) => {
+        html += `
+          <div class="review-card">
+            <div><strong>Question ${index + 1}</strong></div>
+            <br>
+            <div>${item.question}</div>
+            <br>
+            <div>Your Answer: <strong>${item.selected}</strong></div>
+            <br>
+            <div>Correct Answer: <strong>${item.answer}</strong></div>
+            <br>
+            <div>Result: <span class="${item.correct ? 'correct' : 'incorrect'}">${item.correct ? '✓ Correct' : '✗ Incorrect'}</span></div>
+            <br>
+            <div>Explanation: ${item.explanation || "-"}</div>
+          </div>
+        `;
+      });
+
+      html += `
+            </div>
+            <br>
+            <div class="no-print" style="display: flex; gap: 10px;">
+              <button class="btn btn-primary" onclick="downloadPDF()">📥 Download PDF</button>
+              <button class="btn btn-secondary" onclick="returnHome()">Back to Home</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("app").innerHTML = html;
+    }
+
+    /*****************************************************
+     PDF DOWNLOAD
+    *****************************************************/
+
+    function downloadPDF() {
+      const element = document.getElementById("pdfArea");
+      const options = {
+        margin: 0.5,
+        filename: "JustMockTests_" + Date.now() + ".pdf",
+        image: { type: "jpeg", quality: 1 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "in", format: "a4", orientation: "portrait" }
+      };
+
+      html2pdf().set(options).from(element).save();
+      showNotification("✅ PDF Downloaded", "success");
+    }
+
+    /*****************************************************
+     MODAL MANAGEMENT
+    *****************************************************/
+
+    function openModal(title, content) {
+      const html = `
+        <div class="modal-window">
+          <div class="modal-header">
+            <h3>${title}</h3>
+            <button onclick="closeModal()">×</button>
+          </div>
+          <div class="modal-content">${content}</div>
+        </div>
+      `;
+
+      const backdrop = document.getElementById("modalRoot");
+      backdrop.innerHTML = html;
+      backdrop.classList.add("modal-backdrop", "active");
+    }
+
+    function closeModal() {
+      const backdrop = document.getElementById("modalRoot");
+      backdrop.classList.remove("active");
+      backdrop.innerHTML = "";
+    }
+
+    /*****************************************************
+     POLICY VIEWER
+    *****************************************************/
+
+    function openPolicy(sheetName) {
+      showLoader();
+
+      google.script.run
+        .withSuccessHandler(function(text) {
+          hideLoader();
+          openModal(
+            sheetName.replace("policy_", "").replace(/_/g, " "),
+            `<pre style="white-space: pre-wrap; word-wrap: break-word;">${text}</pre>`
+          );
+        })
+        .getPolicy(sheetName);
+    }
+
+    /*****************************************************
+     SESSION PERSISTENCE
+    *****************************************************/
+
+    function saveSession() {
+      const session = {
+        sessionId: APP.sessionId,
+        candidateName: APP.candidateName,
+        currentMode: APP.currentMode,
+        currentExam: APP.currentExam,
+        currentTopics: APP.currentTopics,
+        currentLength: APP.currentLength,
+        currentQuestionIndex: APP.currentQuestionIndex,
+        currentAnswers: APP.currentAnswers,
+        startTime: APP.startTime,
+        countdown: APP.countdown,
+        savedAt: Date.now()
+      };
+
+      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+      localStorage.setItem(QUESTION_KEY, JSON.stringify(APP.currentQuestions));
+    }
+
+    function clearSession() {
+      localStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem(QUESTION_KEY);
+    }
+
+    function recoverSession() {
+      try {
+        const raw = localStorage.getItem(SESSION_KEY);
+        if (!raw) return;
+
+        const data = JSON.parse(raw);
+        const ageHours = (Date.now() - data.savedAt) / (1000 * 60 * 60);
+
+        if (ageHours > 24) {
+          clearSession();
+          return;
+        }
+
+        APP.sessionId = data.sessionId;
+        APP.candidateName = data.candidateName;
+        APP.currentMode = data.currentMode;
+        APP.currentExam = data.currentExam;
+        APP.currentTopics = data.currentTopics;
+        APP.currentLength = data.currentLength;
+        APP.currentQuestionIndex = data.currentQuestionIndex;
+        APP.currentAnswers = data.currentAnswers || {};
+        APP.startTime = data.startTime;
+        APP.countdown = data.countdown;
+
+        const questionData = localStorage.getItem(QUESTION_KEY);
+        if (questionData) {
+          APP.currentQuestions = JSON.parse(questionData);
+        }
+
+      } catch (error) {
+        console.log("Session recovery error:", error);
+      }
+    }
+
+    function attemptResumeQuiz() {
+      if (APP.currentQuestions && APP.currentQuestions.length > 0) {
+        const html = `
+          <p>An unfinished test was found from ${new Date(APP.startTime).toLocaleString()}.</p>
+          <br>
+          <button class="btn btn-success" onclick="resumeQuiz()">Resume Test</button>
+          <button class="btn btn-secondary" onclick="closeModal(); clearSession();">Start New Test</button>
+        `;
+        openModal("Resume Test?", html);
+      }
+    }
+
+    function resumeQuiz() {
+      closeModal();
+      renderQuizPage();
+      initializeQuiz();
+    }
+
+    /*****************************************************
+     UTILITIES
+    *****************************************************/
+
+    function generateSessionId() {
+      return "JMT_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+    }
+
+    function showNotification(message, type = "info") {
+      const notification = document.createElement("div");
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.remove();
+      }, 3000);
+    }
+
+    function returnHome() {
+      location.reload();
+    }
+
+  </script>
+
+</body>
+</html>
