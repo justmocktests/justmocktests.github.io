@@ -1,0 +1,582 @@
+/*********************************************************
+ JUST MOCK TESTS - Enhanced Production Backend
+ Version 3.0 - Sandbox Mode Ready
+ Google Apps Script Backend Engine
+ *********************************************************/
+
+const CACHE_SECONDS = 1800;
+
+/*********************************************************
+ WEB APP - CORS Enabled
+ *********************************************************/
+
+function doGet() {
+  return HtmlService
+    .createTemplateFromFile("Index")
+    .evaluate()
+    .setTitle("Just Mock Tests")
+    .setXFrameOptionsMode(
+      HtmlService.XFrameOptionsMode.ALLOWALL
+    );
+}
+
+/*********************************************************
+ INCLUDE HTML FILES
+ *********************************************************/
+
+function include(filename) {
+  return HtmlService
+    .createHtmlOutputFromFile(filename)
+    .getContent();
+}
+
+/*********************************************************
+ ADMIN CONFIG READER
+ Reads from ADMIN_CONFIG sheet
+ Column A = Key, Column B = Value
+ *********************************************************/
+
+function getConfig() {
+  try {
+    const ss = SpreadsheetApp.getActive();
+    const sheet = ss.getSheetByName("ADMIN_CONFIG");
+    
+    if (!sheet) {
+      Logger.log("⚠️ ADMIN_CONFIG sheet not found");
+      return getDefaultConfig();
+    }
+    
+    const values = sheet.getDataRange().getValues();
+    const config = {};
+    
+    // Skip header row (row 1)
+    for (let i = 1; i < values.length; i++) {
+      const row = values[i];
+      if (row[0] && row[0].toString().trim() !== "") {
+        const key = row[0].toString().trim();
+        const value = row[1] ? row[1].toString().trim() : "";
+        config[key] = value;
+      }
+    }
+    
+    Logger.log("✅ Config loaded: " + JSON.stringify(config));
+    return config;
+    
+  } catch (error) {
+    Logger.log("❌ Error reading ADMIN_CONFIG: " + error.toString());
+    return getDefaultConfig();
+  }
+}
+
+/*********************************************************
+ DEFAULT CONFIG - Fallback if ADMIN_CONFIG missing
+ *********************************************************/
+
+function getDefaultConfig() {
+  return {
+    SITE_NAME: "Just Mock Tests",
+    TAGLINE: "No Email, No Phone, No Spam — Just Net Practice for you",
+    PRICE_25: "10",
+    PRICE_50: "20",
+    PRICE_100: "40",
+    SANDBOX_MODE: "true",
+    PAYMENT_MODE: "SANDBOX",
+    BUSINESS_NAME: "Just Mock Tests"
+  };
+}
+
+/*********************************************************
+ CACHE RESET
+ *********************************************************/
+
+function clearAppCache() {
+  CacheService.getScriptCache().removeAll([
+    "PORTAL_DATA",
+    "CONFIG_CACHE"
+  ]);
+  Logger.log("✅ App cache cleared");
+  return true;
+}
+
+/*********************************************************
+ HOMEPAGE DATA - CMS Layout
+ *********************************************************/
+
+function getPortalData() {
+  const cache = CacheService.getScriptCache();
+  const cached = cache.get("PORTAL_DATA");
+  
+  if (cached) {
+    return JSON.parse(cached);
+  }
+  
+  try {
+    const ss = SpreadsheetApp.getActive();
+    const sheets = ss.getSheets();
+    
+    const exams = [];
+    const topics = [];
+    const policies = [];
+    
+    sheets.forEach(sheet => {
+      const name = sheet.getName();
+      
+      if (name.startsWith("exam_")) {
+        exams.push({
+          sheet: name,
+          label: cleanLabel(name)
+        });
+      }
+      
+      if (name.startsWith("topic_")) {
+        topics.push({
+          sheet: name,
+          label: cleanLabel(name)
+        });
+      }
+      
+      if (name.startsWith("policy_")) {
+        policies.push({
+          sheet: name,
+          label: cleanLabel(name)
+        });
+      }
+    });
+    
+    const config = getConfig();
+    
+    const data = {
+      config: config,
+      exams: exams.sort((a, b) => a.label.localeCompare(b.label)),
+      topics: topics.sort((a, b) => a.label.localeCompare(b.label)),
+      policies: policies.sort((a, b) => a.label.localeCompare(b.label))
+    };
+    
+    cache.put("PORTAL_DATA", JSON.stringify(data), CACHE_SECONDS);
+    Logger.log("✅ Portal data loaded and cached");
+    
+    return data;
+    
+  } catch (error) {
+    Logger.log("❌ Error loading portal data: " + error.toString());
+    return {
+      config: getDefaultConfig(),
+      exams: [],
+      topics: [],
+      policies: []
+    };
+  }
+}
+
+/*********************************************************
+ LABEL FORMATTER
+ *********************************************************/
+
+function cleanLabel(value) {
+  return value
+    .replace(/^exam_/, "")
+    .replace(/^topic_/, "")
+    .replace(/^policy_/, "")
+    .replace(/_/g, " ")
+    .trim();
+}
+
+/*********************************************************
+ POLICY READER
+ *********************************************************/
+
+function getPolicy(sheetName) {
+  try {
+    const ss = SpreadsheetApp.getActive();
+    const sheet = ss.getSheetByName(sheetName);
+    
+    if (!sheet) {
+      return "Policy not found.";
+    }
+    
+    const values = sheet
+      .getDataRange()
+      .getDisplayValues()
+      .flat()
+      .filter(v => v && v.toString().trim() !== "")
+      .join("\n\n");
+    
+    Logger.log("✅ Policy loaded: " + sheetName);
+    return values || "No content available.";
+    
+  } catch (error) {
+    Logger.log("❌ Error reading policy: " + error.toString());
+    return "Error loading policy content.";
+  }
+}
+
+/*********************************************************
+ QUESTION LOADER - Enhanced with proper column mapping
+ 
+ Column structure (from user's sheet):
+ A = QUESTION_ID
+ B = QUESTION
+ C = IMAGE_URL
+ D = OPTION_A
+ E = OPTION_B
+ F = OPTION_C
+ G = OPTION_D
+ H = CORRECT_ANSWER
+ I = EXPLANATION
+ *********************************************************/
+
+function readQuestionSheet(sheetName) {
+  try {
+    const ss = SpreadsheetApp.getActive();
+    const sheet = ss.getSheetByName(sheetName);
+    
+    if (!sheet) {
+      Logger.log("⚠️ Sheet not found: " + sheetName);
+      return [];
+    }
+    
+    const dataRange = sheet.getDataRange();
+    const rows = dataRange.getValues();
+    
+    if (rows.length < 2) {
+      Logger.log("⚠️ Sheet empty: " + sheetName);
+      return [];
+    }
+    
+    // Skip header row (row 0)
+    const questions = [];
+    
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      
+      // Skip if question text is empty
+      if (!row[1] || row[1].toString().trim() === "") {
+        continue;
+      }
+      
+      // Extract correct answer (could be A, B, C, D or 1, 2, 3, 4)
+      let correctAnswer = row[7] ? row[7].toString().trim().toUpperCase() : "A";
+      
+      // Convert numeric answers to letters if needed
+      if (correctAnswer === "1") correctAnswer = "A";
+      if (correctAnswer === "2") correctAnswer = "B";
+      if (correctAnswer === "3") correctAnswer = "C";
+      if (correctAnswer === "4") correctAnswer = "D";
+      
+      const question = {
+        id: row[0] ? row[0].toString().trim() : `q_${i}`,
+        question: row[1].toString().trim(),
+        imageUrl: row[2] ? row[2].toString().trim() : "",
+        options: [
+          row[3] ? row[3].toString().trim() : "",
+          row[4] ? row[4].toString().trim() : "",
+          row[5] ? row[5].toString().trim() : "",
+          row[6] ? row[6].toString().trim() : ""
+        ],
+        answer: correctAnswer,
+        explanation: row[8] ? row[8].toString().trim() : ""
+      };
+      
+      // Validate all options are present
+      if (question.options.every(opt => opt !== "")) {
+        questions.push(question);
+      } else {
+        Logger.log("⚠️ Skipping incomplete question at row " + (i + 1));
+      }
+    }
+    
+    Logger.log("✅ Loaded " + questions.length + " questions from " + sheetName);
+    return questions;
+    
+  } catch (error) {
+    Logger.log("❌ Error reading sheet " + sheetName + ": " + error.toString());
+    return [];
+  }
+}
+
+/*********************************************************
+ FISHER-YATES SHUFFLE
+ Ensures unpredictable question ordering
+ *********************************************************/
+
+function fisherYates(array) {
+  const arr = [...array];
+  
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  
+  return arr;
+}
+
+/*********************************************************
+ EXAM GENERATOR
+ Loads and shuffles questions from exam sheet
+ *********************************************************/
+
+function generateExam(sheetName, count) {
+  try {
+    const questions = readQuestionSheet(sheetName);
+    
+    if (questions.length === 0) {
+      throw new Error("No questions found in " + sheetName);
+    }
+    
+    const shuffled = fisherYates(questions);
+    const result = shuffled.slice(0, count);
+    
+    Logger.log("✅ Generated exam: " + count + " questions from " + sheetName);
+    return result;
+    
+  } catch (error) {
+    Logger.log("❌ Error generating exam: " + error.toString());
+    return [];
+  }
+}
+
+/*********************************************************
+ CUSTOM TEST GENERATOR
+ Combines questions from multiple topics
+ *********************************************************/
+
+function generateCustomTest(topics, count) {
+  try {
+    if (!Array.isArray(topics) || topics.length === 0) {
+      throw new Error("No topics selected");
+    }
+    
+    let pool = [];
+    
+    topics.forEach(topic => {
+      const questions = readQuestionSheet(topic);
+      pool = pool.concat(questions);
+    });
+    
+    if (pool.length === 0) {
+      throw new Error("No questions found in selected topics");
+    }
+    
+    const shuffled = fisherYates(pool);
+    const result = shuffled.slice(0, count);
+    
+    Logger.log("✅ Generated custom test: " + count + " questions from " + topics.length + " topics");
+    return result;
+    
+  } catch (error) {
+    Logger.log("❌ Error generating custom test: " + error.toString());
+    return [];
+  }
+}
+
+/*********************************************************
+ RESULT CALCULATOR
+ *********************************************************/
+
+function calculateResult(questions, answers) {
+  try {
+    let score = 0;
+    const review = [];
+    
+    questions.forEach((q, index) => {
+      const selected = answers[index];
+      const correct = selected === q.answer;
+      
+      if (correct) {
+        score++;
+      }
+      
+      review.push({
+        question: q.question,
+        imageUrl: q.imageUrl,
+        selected: selected || "Not Answered",
+        answer: q.answer,
+        explanation: q.explanation,
+        correct: correct
+      });
+    });
+    
+    const accuracy = questions.length === 0 
+      ? 0 
+      : Math.round((score / questions.length) * 100);
+    
+    const result = {
+      score: score,
+      totalQuestions: questions.length,
+      accuracy: accuracy,
+      review: review,
+      timestamp: new Date().toLocaleString('en-IN')
+    };
+    
+    Logger.log("✅ Result calculated: " + score + "/" + questions.length);
+    return result;
+    
+  } catch (error) {
+    Logger.log("❌ Error calculating result: " + error.toString());
+    return {
+      score: 0,
+      totalQuestions: 0,
+      accuracy: 0,
+      review: [],
+      error: error.toString()
+    };
+  }
+}
+
+/*********************************************************
+ PAYMENT PROCESSING - SANDBOX
+ *********************************************************/
+
+function createSandboxOrder(payload) {
+  try {
+    const config = getConfig();
+    
+    const priceMap = {
+      25: Number(config.PRICE_25 || 10),
+      50: Number(config.PRICE_50 || 20),
+      100: Number(config.PRICE_100 || 40)
+    };
+    
+    const amount = priceMap[payload.questionCount] || 0;
+    
+    const order = {
+      success: true,
+      orderId: "SANDBOX_" + Utilities.getUuid(),
+      amount: amount,
+      currency: "INR",
+      mode: "SANDBOX",
+      timestamp: new Date().toLocaleString('en-IN')
+    };
+    
+    Logger.log("✅ Sandbox order created: ₹" + amount);
+    return order;
+    
+  } catch (error) {
+    Logger.log("❌ Error creating order: " + error.toString());
+    return {
+      success: false,
+      error: error.toString()
+    };
+  }
+}
+
+/*********************************************************
+ PAYMENT VERIFICATION - SANDBOX
+ *********************************************************/
+
+function verifySandboxPayment() {
+  try {
+    const response = {
+      success: true,
+      paymentId: "PAY_" + Utilities.getUuid(),
+      mode: "SANDBOX",
+      timestamp: new Date().toLocaleString('en-IN')
+    };
+    
+    Logger.log("✅ Sandbox payment verified: " + response.paymentId);
+    return response;
+    
+  } catch (error) {
+    Logger.log("❌ Error verifying payment: " + error.toString());
+    return {
+      success: false,
+      error: error.toString()
+    };
+  }
+}
+
+/*********************************************************
+ DEBUG & TESTING FUNCTIONS
+ *********************************************************/
+
+function testSheetConnection() {
+  try {
+    const ss = SpreadsheetApp.getActive();
+    const config = getConfig();
+    const portalData = getPortalData();
+    
+    return {
+      status: "✅ Connected",
+      spreadsheet: ss.getName(),
+      config: config,
+      examsFound: portalData.exams.length,
+      topicsFound: portalData.topics.length,
+      policiesFound: portalData.policies.length,
+      timestamp: new Date().toLocaleString('en-IN')
+    };
+    
+  } catch (error) {
+    return {
+      status: "❌ Error",
+      error: error.toString()
+    };
+  }
+}
+
+function debugLoadQuestions(sheetName) {
+  try {
+    const questions = readQuestionSheet(sheetName);
+    
+    return {
+      status: "✅ Success",
+      sheetName: sheetName,
+      totalQuestions: questions.length,
+      sampleQuestions: questions.slice(0, 3),
+      timestamp: new Date().toLocaleString('en-IN')
+    };
+    
+  } catch (error) {
+    return {
+      status: "❌ Error",
+      error: error.toString()
+    };
+  }
+}
+
+function debugGenerateExam(sheetName, count) {
+  try {
+    const exam = generateExam(sheetName, count);
+    
+    return {
+      status: "✅ Success",
+      sheetName: sheetName,
+      requestedCount: count,
+      actualCount: exam.length,
+      sample: exam.slice(0, 2),
+      timestamp: new Date().toLocaleString('en-IN')
+    };
+    
+  } catch (error) {
+    return {
+      status: "❌ Error",
+      error: error.toString()
+    };
+  }
+}
+
+/*********************************************************
+ EMAIL REPORTING (Future - Email Setup)
+ *********************************************************/
+
+function sendDailyAdminReport() {
+  // TODO: Implement email reporting
+  // This will send daily analytics to admin email
+}
+
+function sendStudentResultEmail(studentEmail, studentName, result) {
+  // TODO: Implement student result email with PDF attachment
+}
+
+/*********************************************************
+ LOGGING UTILITY
+ *********************************************************/
+
+function getRecentLogs() {
+  try {
+    const logs = [];
+    // This would fetch from a logging sheet in production
+    return logs;
+  } catch (error) {
+    return [];
+  }
+}
