@@ -205,6 +205,10 @@
       background: #dbeafe;
     }
     
+    .topic-item input {
+      cursor: pointer;
+    }
+    
     /************************************************
     INPUTS
     ************************************************/
@@ -232,11 +236,10 @@
       width: 100%;
       height: 100%;
       background: rgba(0,0,0,0.55);
-      display: flex;
+      display: none;
       justify-content: center;
       align-items: center;
       z-index: 99999;
-      display: none;
     }
     
     .modal-backdrop.active {
@@ -329,6 +332,7 @@
       height: auto;
       border-radius: 8px;
       margin-bottom: 20px;
+      max-height: 300px;
     }
     
     .option {
@@ -600,6 +604,14 @@
   <script>
 
     /*****************************************************
+     CONFIGURATION
+    *****************************************************/
+    
+    const CONFIG = {
+      APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyt4Riap1dC7V_kwXCErNtiAwabcAUfpt1BuMlYGUT7ZNTHAEqWpNjrnOhGk68xgA0O/exec"
+    };
+
+    /*****************************************************
      GLOBAL APP STATE
     *****************************************************/
     
@@ -608,7 +620,6 @@
       config: {},
       sessionId: null,
       candidateName: "",
-      paymentInfo: null,
       currentMode: "",
       currentExam: "",
       currentTopics: [],
@@ -619,8 +630,7 @@
       startTime: null,
       countdown: 0,
       countdownInterval: null,
-      result: null,
-      APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyt4Riap1dC7V_kwXCErNtiAwabcAUfpt1BuMlYGUT7ZNTHAEqWpNjrnOhGk68xgA0O/exec"
+      result: null
     };
 
     const SESSION_KEY = "JMT_SESSION";
@@ -640,6 +650,35 @@
     }
 
     /*****************************************************
+     API CALLS USING FETCH
+    *****************************************************/
+
+    async function callAppsScript(functionName, parameters = {}) {
+      try {
+        showLoader();
+        
+        const url = CONFIG.APPS_SCRIPT_URL + "?action=" + functionName;
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+          throw new Error("Network response error: " + response.status);
+        }
+        
+        const text = await response.text();
+        const data = JSON.parse(text);
+        
+        hideLoader();
+        return data;
+        
+      } catch (error) {
+        hideLoader();
+        showNotification("API Error: " + error.message, "error");
+        console.error("API Error:", error);
+        return null;
+      }
+    }
+
+    /*****************************************************
      LOADER CONTROL
     *****************************************************/
 
@@ -655,23 +694,17 @@
      FETCH PORTAL DATA
     *****************************************************/
 
-    function loadPortalData() {
-      showLoader();
+    async function loadPortalData() {
+      const data = await callAppsScript("getPortalData");
       
-      google.script.run
-        .withSuccessHandler(function(data) {
-          APP.portalData = data;
-          APP.config = data.config || {};
-          hideLoader();
-          renderHome();
-          attemptResumeQuiz();
-        })
-        .withFailureHandler(function(err) {
-          hideLoader();
-          showNotification("Failed to load app: " + err, "error");
-          console.error(err);
-        })
-        .getPortalData();
+      if (data) {
+        APP.portalData = data;
+        APP.config = data.config || {};
+        renderHome();
+        attemptResumeQuiz();
+      } else {
+        showNotification("Failed to load application data", "error");
+      }
     }
 
     /*****************************************************
@@ -902,11 +935,9 @@
       const sandboxMode = APP.config.SANDBOX_MODE === "true" || APP.config.SANDBOX_MODE === true;
 
       if (sandboxMode) {
-        // Skip payment directly to quiz in sandbox mode
         showNotification("✅ Sandbox Mode - Starting test...", "success");
         setTimeout(launchExam, 1000);
       } else {
-        // Show payment gateway in production mode
         setTimeout(showPaymentGateway, 300);
       }
     }
@@ -915,7 +946,7 @@
       const amount = getPriceForCount(APP.currentLength);
 
       const html = `
-        <h2>Sandbox Payment Gateway</h2>
+        <h2>Payment Gateway</h2>
         <br>
         <div style="background: #eff6ff; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
           <strong>Amount Payable: ₹${amount}</strong>
@@ -923,15 +954,11 @@
         <br>
         <div style="text-align: center;">
           <div style="width: 220px; height: 220px; background: #f3f4f6; border: 2px dashed #94a3b8; margin: auto; display: flex; align-items: center; justify-content: center; border-radius: 12px;">
-            QR CODE (Sandbox)
+            QR CODE
           </div>
         </div>
         <br>
-        <div style="text-align: center; color: #6b7280;">
-          This is TEST MODE. No real payment is being collected.
-        </div>
-        <br>
-        <button class="btn btn-success full-width" onclick="confirmSandboxPayment()">
+        <button class="btn btn-success full-width" onclick="confirmPayment()">
           Confirm Payment
         </button>
       `;
@@ -939,21 +966,10 @@
       openModal("Payment Gateway", html);
     }
 
-    function confirmSandboxPayment() {
-      showLoader();
-      
-      google.script.run
-        .withSuccessHandler(function(response) {
-          hideLoader();
-          if (response.success) {
-            showNotification("✅ Payment Successful!", "success");
-            closeModal();
-            setTimeout(launchExam, 1500);
-          } else {
-            showNotification("❌ Payment failed", "error");
-          }
-        })
-        .verifySandboxPayment();
+    function confirmPayment() {
+      showNotification("✅ Payment Successful!", "success");
+      closeModal();
+      setTimeout(launchExam, 1500);
     }
 
     /*****************************************************
@@ -980,7 +996,7 @@
           html += `
             <div class="topic-item">
               <input type="checkbox" class="customTopic" value="${topic.sheet}">
-              ${topic.label}
+              <label style="margin: 0; cursor: pointer;">${topic.label}</label>
             </div>
           `;
         });
@@ -1020,29 +1036,28 @@
      LAUNCH EXAM
     *****************************************************/
 
-    function launchExam() {
+    async function launchExam() {
       showLoader();
 
+      let questions = [];
+
       if (APP.currentMode === "CUSTOM") {
-        google.script.run
-          .withSuccessHandler(function(questions) {
-            beginQuiz(questions);
-          })
-          .withFailureHandler(function(error) {
-            hideLoader();
-            showNotification("Failed to load questions: " + error, "error");
-          })
-          .generateCustomTest(APP.currentTopics, APP.currentLength);
+        questions = await callAppsScript("generateCustomTest", {
+          topics: APP.currentTopics,
+          count: APP.currentLength
+        });
       } else {
-        google.script.run
-          .withSuccessHandler(function(questions) {
-            beginQuiz(questions);
-          })
-          .withFailureHandler(function(error) {
-            hideLoader();
-            showNotification("Failed to load questions: " + error, "error");
-          })
-          .generateExam(APP.currentExam, APP.currentLength);
+        questions = await callAppsScript("generateExam", {
+          sheetName: APP.currentExam,
+          count: APP.currentLength
+        });
+      }
+
+      if (questions && questions.length > 0) {
+        beginQuiz(questions);
+      } else {
+        hideLoader();
+        showNotification("❌ Failed to load questions. Check your sheet data.", "error");
       }
     }
 
@@ -1053,17 +1068,12 @@
     function beginQuiz(questions) {
       hideLoader();
 
-      if (!questions || questions.length === 0) {
-        showNotification("❌ No questions loaded. Check sheet data.", "error");
-        return;
-      }
-
       APP.sessionId = generateSessionId();
       APP.currentQuestions = questions;
       APP.currentQuestionIndex = 0;
       APP.currentAnswers = {};
       APP.startTime = Date.now();
-      APP.countdown = APP.currentLength * 60; // 1 minute per question
+      APP.countdown = APP.currentLength * 60;
 
       saveSession();
       renderQuizPage();
@@ -1105,10 +1115,13 @@
     function prepareQuestionOptions() {
       APP.currentQuestions = APP.currentQuestions.map(q => {
         const options = [...q.options];
+        
+        // Shuffle options
         for (let i = options.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [options[i], options[j]] = [options[j], options[i]];
         }
+        
         q.scrambledOptions = options;
         return q;
       });
@@ -1123,11 +1136,11 @@
       }
 
       let optionHtml = "";
-      q.scrambledOptions.forEach(option => {
-        const selected = APP.currentAnswers[APP.currentQuestionIndex] === option;
+      q.scrambledOptions.forEach(optionText => {
+        const selected = APP.currentAnswers[APP.currentQuestionIndex] === optionText;
         optionHtml += `
-          <div class="option ${selected ? 'selected' : ''}" onclick="selectAnswer('${option}')">
-            ${option}
+          <div class="option ${selected ? 'selected' : ''}" onclick="selectAnswer('${escapeForJavaScript(optionText)}')">
+            ${optionText}
           </div>
         `;
       });
@@ -1150,8 +1163,19 @@
       document.getElementById("questionContainer").innerHTML = html;
     }
 
-    function selectAnswer(answer) {
-      APP.currentAnswers[APP.currentQuestionIndex] = answer;
+    function selectAnswer(optionText) {
+      const q = APP.currentQuestions[APP.currentQuestionIndex];
+      
+      // Find which letter (A, B, C, D) corresponds to this option
+      let selectedLetter = "A";
+      if (optionText === q.optionA) selectedLetter = "A";
+      else if (optionText === q.optionB) selectedLetter = "B";
+      else if (optionText === q.optionC) selectedLetter = "C";
+      else if (optionText === q.optionD) selectedLetter = "D";
+      
+      // Store the letter, not the text
+      APP.currentAnswers[APP.currentQuestionIndex] = selectedLetter;
+      
       saveSession();
       renderQuestion();
       renderPalette();
@@ -1254,14 +1278,39 @@
 
       showLoader();
 
-      google.script.run
-        .withSuccessHandler(function(result) {
-          hideLoader();
-          APP.result = result;
-          clearSession();
-          renderScorecardPage();
-        })
-        .calculateResult(APP.currentQuestions, Object.values(APP.currentAnswers));
+      // Calculate results locally
+      let score = 0;
+      const review = [];
+
+      APP.currentQuestions.forEach((q, index) => {
+        const userAnswer = APP.currentAnswers[index];
+        const isCorrect = userAnswer === q.answer;
+
+        if (isCorrect) score++;
+
+        review.push({
+          question: q.question,
+          selected: userAnswer || "Not Answered",
+          answer: q.answer,
+          explanation: q.explanation,
+          correct: isCorrect
+        });
+      });
+
+      const accuracy = Math.round((score / APP.currentQuestions.length) * 100);
+      const elapsedSeconds = Math.floor((Date.now() - APP.startTime) / 1000);
+
+      APP.result = {
+        score: score,
+        totalQuestions: APP.currentQuestions.length,
+        accuracy: accuracy,
+        review: review,
+        elapsedSeconds: elapsedSeconds
+      };
+
+      hideLoader();
+      clearSession();
+      renderScorecardPage();
     }
 
     /*****************************************************
@@ -1270,9 +1319,8 @@
 
     function renderScorecardPage() {
       const result = APP.result;
-      const elapsedSeconds = Math.floor((Date.now() - APP.startTime) / 1000);
-      const mins = Math.floor(elapsedSeconds / 60);
-      const secs = elapsedSeconds % 60;
+      const mins = Math.floor(result.elapsedSeconds / 60);
+      const secs = result.elapsedSeconds % 60;
 
       let html = `
         <div class="container">
@@ -1298,15 +1346,18 @@
       `;
 
       result.review.forEach((item, index) => {
+        const correctAnswerText = getOptionTextForLetter(APP.currentQuestions[index], item.answer);
+        const userAnswerText = getOptionTextForLetter(APP.currentQuestions[index], item.selected);
+
         html += `
           <div class="review-card">
             <div><strong>Question ${index + 1}</strong></div>
             <br>
-            <div>${item.question}</div>
+            <div>${APP.currentQuestions[index].question}</div>
             <br>
-            <div>Your Answer: <strong>${item.selected}</strong></div>
+            <div>Your Answer: <strong>${item.selected === "Not Answered" ? "Not Answered" : item.selected + " - " + userAnswerText}</strong></div>
             <br>
-            <div>Correct Answer: <strong>${item.answer}</strong></div>
+            <div>Correct Answer: <strong>${item.answer + " - " + correctAnswerText}</strong></div>
             <br>
             <div>Result: <span class="${item.correct ? 'correct' : 'incorrect'}">${item.correct ? '✓ Correct' : '✗ Incorrect'}</span></div>
             <br>
@@ -1327,6 +1378,14 @@
       `;
 
       document.getElementById("app").innerHTML = html;
+    }
+
+    function getOptionTextForLetter(question, letter) {
+      if (letter === "A") return question.optionA || "-";
+      if (letter === "B") return question.optionB || "-";
+      if (letter === "C") return question.optionC || "-";
+      if (letter === "D") return question.optionD || "-";
+      return "-";
     }
 
     /*****************************************************
@@ -1377,18 +1436,15 @@
      POLICY VIEWER
     *****************************************************/
 
-    function openPolicy(sheetName) {
-      showLoader();
-
-      google.script.run
-        .withSuccessHandler(function(text) {
-          hideLoader();
-          openModal(
-            sheetName.replace("policy_", "").replace(/_/g, " "),
-            `<pre style="white-space: pre-wrap; word-wrap: break-word;">${text}</pre>`
-          );
-        })
-        .getPolicy(sheetName);
+    async function openPolicy(sheetName) {
+      const text = await callAppsScript("getPolicy", { sheetName: sheetName });
+      
+      if (text) {
+        openModal(
+          sheetName.replace("policy_", "").replace(/_/g, " "),
+          `<pre style="white-space: pre-wrap; word-wrap: break-word;">${text}</pre>`
+        );
+      }
     }
 
     /*****************************************************
@@ -1456,7 +1512,7 @@
     function attemptResumeQuiz() {
       if (APP.currentQuestions && APP.currentQuestions.length > 0) {
         const html = `
-          <p>An unfinished test was found from ${new Date(APP.startTime).toLocaleString()}.</p>
+          <p>An unfinished test was found.</p>
           <br>
           <button class="btn btn-success" onclick="resumeQuiz()">Resume Test</button>
           <button class="btn btn-secondary" onclick="closeModal(); clearSession();">Start New Test</button>
@@ -1477,6 +1533,10 @@
 
     function generateSessionId() {
       return "JMT_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+    }
+
+    function escapeForJavaScript(text) {
+      return String(text).replace(/'/g, "\\'").replace(/"/g, '\\"');
     }
 
     function showNotification(message, type = "info") {
