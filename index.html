@@ -698,11 +698,6 @@
       document.getElementById("loaderOverlay").classList.add("active");
     }
 
-    function hideLoader() {
-      document.getElementById("loaderOverlay").classList.remove("remove"); // Reverted structural artifact to match original setup safely
-      document.getElementById("loaderOverlay").classList.remove("active");
-    }
-
     /*****************************************************
      FETCH PORTAL DATA
     *****************************************************/
@@ -1154,13 +1149,25 @@
 
       let optionHtml = "";
       q.scrambledOptions.forEach(optionText => {
-        const selected = APP.currentAnswers[APP.currentQuestionIndex] === optionText;
+        // Find which option letter matches this text dynamically
+        let currentOptionLetter = "A";
+        if (optionText === q.optionA) currentOptionLetter = "A";
+        else if (optionText === q.optionB) currentOptionLetter = "B";
+        else if (optionText === q.optionC) currentOptionLetter = "C";
+        else if (optionText === q.optionD) currentOptionLetter = "D";
+
+        // Check against the stored architectural choice letter
+        const selected = APP.currentAnswers[APP.currentQuestionIndex] === currentOptionLetter;
+        
         optionHtml += `
           <div class="option ${selected ? 'selected' : ''}" onclick="selectAnswer('${escapeForJavaScript(optionText)}')">
             ${optionText}
           </div>
         `;
       });
+
+      // Conditional logic flag to see if we are on the very last step
+      const isLastQuestion = APP.currentQuestionIndex === APP.currentQuestions.length - 1;
 
       const html = `
         <div class="question-card">
@@ -1171,7 +1178,7 @@
           ${optionHtml}
           <div class="quiz-nav">
             <button class="btn btn-secondary" onclick="previousQuestion()" ${APP.currentQuestionIndex === 0 ? 'disabled' : ''}>Previous</button>
-            <button class="btn btn-primary" onclick="nextQuestion()">Next</button>
+            ${isLastQuestion ? '' : `<button class="btn btn-primary" onclick="nextQuestion()">Next</button>`}
             <button class="btn btn-success" onclick="confirmSubmit()">Submit Test</button>
           </div>
         </div>
@@ -1262,6 +1269,10 @@
         }
       }, 1000);
     }
+
+    /*****************************************************
+     update TIMER DISPLAY
+    *****************************************************/
 
     function updateTimerDisplay() {
       const mins = Math.floor(APP.countdown / 60);
@@ -1545,6 +1556,15 @@
     /*****************************************************
      UTILITIES
     *****************************************************/
+
+    function getOptionTextForLetter(questionObject, letter) {
+      if (!questionObject) return "";
+      if (letter === "A") return questionObject.optionA;
+      if (letter === "B") return questionObject.optionB;
+      if (letter === "C") return questionObject.optionC;
+      if (letter === "D") return questionObject.optionD;
+      return "";
+    }
 
     function generateSessionId() {
       return "JMT_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
