@@ -653,30 +653,36 @@
      API CALLS USING FETCH
     *****************************************************/
 
-    async function callAppsScript(functionName, parameters = {}) {
-      try {
-        showLoader();
-        
-        const url = CONFIG.APPS_SCRIPT_URL + "?action=" + functionName;
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-          throw new Error("Network response error: " + response.status);
-        }
-        
-        const text = await response.text();
-        const data = JSON.parse(text);
-        
-        hideLoader();
-        return data;
-        
-      } catch (error) {
-        hideLoader();
-        showNotification("API Error: " + error.message, "error");
-        console.error("API Error:", error);
-        return null;
-      }
+    async function callAppsScript(action, params = {}) {
+  try {
+    showLoader();
+    
+    let url = CONFIG.APPS_SCRIPT_URL + "?action=" + action;
+    
+    if (action === "generateExam") {
+      url += "&sheetName=" + params.sheetName + "&count=" + params.count;
     }
+    if (action === "generateCustomTest") {
+      url += "&topics=" + encodeURIComponent(JSON.stringify(params.topics));
+      url += "&count=" + params.count;
+    }
+    if (action === "getPolicy") {
+      url += "&sheetName=" + params.sheetName;
+    }
+    
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    hideLoader();
+    return data;
+    
+  } catch (error) {
+    hideLoader();
+    showNotification("API Error: " + error.message, "error");
+    console.error("API Error:", error);
+    return null;
+  }
+}
 
     /*****************************************************
      LOADER CONTROL
