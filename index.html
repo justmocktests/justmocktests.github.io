@@ -699,6 +699,7 @@
     }
 
     function hideLoader() {
+      document.getElementById("loaderOverlay").classList.remove("remove"); // Reverted structural artifact to match original setup safely
       document.getElementById("loaderOverlay").classList.remove("active");
     }
 
@@ -1400,14 +1401,6 @@
       document.getElementById("app").innerHTML = html;
     }
 
-    function getOptionTextForLetter(question, letter) {
-      if (letter === "A") return question.optionA || "-";
-      if (letter === "B") return question.optionB || "-";
-      if (letter === "C") return question.optionC || "-";
-      if (letter === "D") return question.optionD || "-";
-      return "-";
-    }
-
     /*****************************************************
      PDF DOWNLOAD
     *****************************************************/
@@ -1453,17 +1446,19 @@
     }
 
     /*****************************************************
-     POLICY VIEWER
+     POLICY VIEWER (UPDATED JSON UNWRAPPING)
     *****************************************************/
 
     async function openPolicy(sheetName) {
-      const text = await callAppsScript("getPolicy", { sheetName: sheetName });
+      const data = await callAppsScript("getPolicy", { sheetName: sheetName });
       
-      if (text) {
+      if (data && data.policy) {
         openModal(
           sheetName.replace("policy_", "").replace(/_/g, " "),
-          `<pre style="white-space: pre-wrap; word-wrap: break-word;">${text}</pre>`
+          `<pre style="white-space: pre-wrap; word-wrap: break-word; font-family: inherit;">${data.policy}</pre>`
         );
+      } else {
+        showNotification("Could not load policy content", "error");
       }
     }
 
