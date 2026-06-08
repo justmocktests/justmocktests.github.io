@@ -698,6 +698,10 @@
       document.getElementById("loaderOverlay").classList.add("active");
     }
 
+    function hideLoader() {
+      document.getElementById("loaderOverlay").classList.remove("active");
+    }
+
     /*****************************************************
      FETCH PORTAL DATA
     *****************************************************/
@@ -950,10 +954,6 @@
       }
     }
 
-    /*****************************************************
-     PAYMENT GATEWAY
-    *****************************************************/
-
     function showPaymentGateway() {
       const amount = getPriceForCount(APP.currentLength);
 
@@ -1149,16 +1149,13 @@
 
       let optionHtml = "";
       q.scrambledOptions.forEach(optionText => {
-        // Find which option letter matches this text dynamically
         let currentOptionLetter = "A";
         if (optionText === q.optionA) currentOptionLetter = "A";
         else if (optionText === q.optionB) currentOptionLetter = "B";
         else if (optionText === q.optionC) currentOptionLetter = "C";
         else if (optionText === q.optionD) currentOptionLetter = "D";
 
-        // Check against the stored architectural choice letter
         const selected = APP.currentAnswers[APP.currentQuestionIndex] === currentOptionLetter;
-        
         optionHtml += `
           <div class="option ${selected ? 'selected' : ''}" onclick="selectAnswer('${escapeForJavaScript(optionText)}')">
             ${optionText}
@@ -1166,7 +1163,6 @@
         `;
       });
 
-      // Conditional logic flag to see if we are on the very last step
       const isLastQuestion = APP.currentQuestionIndex === APP.currentQuestions.length - 1;
 
       const html = `
@@ -1190,14 +1186,12 @@
     function selectAnswer(optionText) {
       const q = APP.currentQuestions[APP.currentQuestionIndex];
       
-      // Find which letter (A, B, C, D) corresponds to this option
       let selectedLetter = "A";
       if (optionText === q.optionA) selectedLetter = "A";
       else if (optionText === q.optionB) selectedLetter = "B";
       else if (optionText === q.optionC) selectedLetter = "C";
       else if (optionText === q.optionD) selectedLetter = "D";
       
-      // Store the letter, not the text
       APP.currentAnswers[APP.currentQuestionIndex] = selectedLetter;
       
       saveSession();
@@ -1222,10 +1216,6 @@
         renderPalette();
       }
     }
-
-    /*****************************************************
-     PALETTE RENDERING
-    *****************************************************/
 
     function renderPalette() {
       let html = `<div class="palette">`;
@@ -1270,10 +1260,6 @@
       }, 1000);
     }
 
-    /*****************************************************
-     update TIMER DISPLAY
-    *****************************************************/
-
     function updateTimerDisplay() {
       const mins = Math.floor(APP.countdown / 60);
       const secs = APP.countdown % 60;
@@ -1310,7 +1296,6 @@
 
       showLoader();
 
-      // Calculate results locally
       let score = 0;
       const review = [];
 
@@ -1412,8 +1397,17 @@
       document.getElementById("app").innerHTML = html;
     }
 
+    function getOptionTextForLetter(question, letter) {
+      if (!question) return "";
+      if (letter === "A") return question.optionA || "-";
+      if (letter === "B") return question.optionB || "-";
+      if (letter === "C") return question.optionC || "-";
+      if (letter === "D") return question.optionD || "-";
+      return "-";
+    }
+
     /*****************************************************
-     PDF DOWNLOAD
+     PDF DOWNLOAD (FIXED SCROLL OFFSET BUG)
     *****************************************************/
 
     function downloadPDF() {
@@ -1422,7 +1416,7 @@
         margin: 0.5,
         filename: "JustMockTests_" + Date.now() + ".pdf",
         image: { type: "jpeg", quality: 1 },
-        html2canvas: { scale: 2 },
+        html2canvas: { scale: 2, scrollY: 0, scrollX: 0, useCORS: true },
         jsPDF: { unit: "in", format: "a4", orientation: "portrait" }
       };
 
@@ -1457,16 +1451,16 @@
     }
 
     /*****************************************************
-     POLICY VIEWER (UPDATED JSON UNWRAPPING)
+     POLICY VIEWER
     *****************************************************/
 
     async function openPolicy(sheetName) {
-      const data = await callAppsScript("getPolicy", { sheetName: sheetName });
+      const text = await callAppsScript("getPolicy", { sheetName: sheetName });
       
-      if (data && data.policy) {
+      if (text && text.policy) {
         openModal(
           sheetName.replace("policy_", "").replace(/_/g, " "),
-          `<pre style="white-space: pre-wrap; word-wrap: break-word; font-family: inherit;">${data.policy}</pre>`
+          `<pre style="white-space: pre-wrap; word-wrap: break-word; font-family: inherit;">${text.policy}</pre>`
         );
       } else {
         showNotification("Could not load policy content", "error");
@@ -1556,15 +1550,6 @@
     /*****************************************************
      UTILITIES
     *****************************************************/
-
-    function getOptionTextForLetter(questionObject, letter) {
-      if (!questionObject) return "";
-      if (letter === "A") return questionObject.optionA;
-      if (letter === "B") return questionObject.optionB;
-      if (letter === "C") return questionObject.optionC;
-      if (letter === "D") return questionObject.optionD;
-      return "";
-    }
 
     function generateSessionId() {
       return "JMT_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
