@@ -8,7 +8,7 @@
   
   <style>
     /************************************************
-    RESET & BASE
+    RESET, BASE & LAYOUT ENGINE
     ************************************************/
     * {
       margin: 0;
@@ -27,9 +27,6 @@
       min-height: 100vh;
     }
     
-    /************************************************
-    CONTAINER
-    ************************************************/
     .container {
       max-width: 1300px;
       margin: auto;
@@ -50,7 +47,7 @@
     }
     
     /************************************************
-    HEADER
+    HEADER BRANDING DESIGN SYSTEM
     ************************************************/
     .hero {
       background: #0f172a;
@@ -63,6 +60,7 @@
       font-size: 46px;
       margin-bottom: 12px;
       font-weight: 700;
+      letter-spacing: -0.5px;
     }
     
     .hero p {
@@ -76,9 +74,6 @@
       color: #cbd5e1;
     }
     
-    /************************************************
-    SANDBOX BANNER
-    ************************************************/
     .sandbox-banner {
       background: #dbeafe;
       border-left: 5px solid #2563eb;
@@ -91,7 +86,7 @@
     }
     
     /************************************************
-    BUTTONS
+    INTERACTIVE UI COMPONENTS & BUTTONS
     ************************************************/
     .btn {
       border: none;
@@ -99,47 +94,26 @@
       border-radius: 10px;
       padding: 12px 20px;
       font-weight: 600;
-      transition: 0.2s;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       font-size: 15px;
+      display: inline-block;
+      text-align: center;
     }
     
     .btn:hover {
       transform: translateY(-2px);
     }
     
-    .btn-primary {
-      background: #2563eb;
-      color: white;
-    }
-    
-    .btn-primary:hover {
-      background: #1e40af;
-    }
-    
-    .btn-success {
-      background: #16a34a;
-      color: white;
-    }
-    
-    .btn-success:hover {
-      background: #15803d;
-    }
-    
-    .btn-secondary {
-      background: #64748b;
-      color: white;
-    }
-    
-    .btn-secondary:hover {
-      background: #475569;
-    }
-    
-    .full-width {
-      width: 100%;
-    }
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-primary:hover { background: #1e40af; }
+    .btn-success { background: #16a34a; color: white; }
+    .btn-success:hover { background: #15803d; }
+    .btn-secondary { background: #64748b; color: white; }
+    .btn-secondary:hover { background: #475569; }
+    .full-width { width: 100%; display: block; }
     
     /************************************************
-    CARDS
+    GRID SYSTEMS & MODULAR VISUAL CARDS
     ************************************************/
     .card-grid {
       display: grid;
@@ -152,36 +126,29 @@
       padding: 22px;
       border-radius: 14px;
       cursor: pointer;
-      transition: 0.2s;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
       border: 2px solid transparent;
     }
     
     .exam-card:hover {
       transform: translateY(-4px);
       border-color: #2563eb;
-      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.2);
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.15);
     }
     
     .exam-card h3 {
       font-size: 18px;
       line-height: 1.4;
+      color: #1e293b;
     }
     
-    /************************************************
-    CUSTOM BUILDER
-    ************************************************/
     .custom-builder {
       background: white;
       padding: 25px;
       border-radius: 14px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
       margin-bottom: 30px;
-    }
-    
-    .custom-builder h2 {
-      margin-bottom: 15px;
-      color: #0f172a;
     }
     
     .topic-checklist {
@@ -197,7 +164,10 @@
       padding: 12px;
       border: 1px solid #e2e8f0;
       cursor: pointer;
-      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s;
     }
     
     .topic-item:hover {
@@ -205,29 +175,23 @@
       background: #dbeafe;
     }
     
-    .topic-item input {
-      cursor: pointer;
-    }
-    
-    /************************************************
-    INPUTS
-    ************************************************/
     .input {
       width: 100%;
       padding: 12px;
       border-radius: 8px;
       border: 1px solid #d1d5db;
       font-size: 14px;
+      transition: border 0.15s ease-in-out;
     }
     
     .input:focus {
       outline: none;
       border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
     }
     
     /************************************************
-    MODAL
+    MODAL INTERACTION SYSTEM
     ************************************************/
     .modal-backdrop {
       position: fixed;
@@ -235,16 +199,15 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.55);
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
       display: none;
       justify-content: center;
       align-items: center;
       z-index: 99999;
     }
     
-    .modal-backdrop.active {
-      display: flex;
-    }
+    .modal-backdrop.active { display: flex; }
     
     .modal-window {
       width: 90%;
@@ -252,24 +215,19 @@
       background: white;
       border-radius: 14px;
       overflow: hidden;
-      animation: slideUp 0.3s ease;
+      animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
     }
     
     @keyframes slideUp {
-      from {
-        transform: translateY(30px);
-        opacity: 0;
-      }
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
     
     .modal-header {
       background: #0f172a;
       color: white;
-      padding: 15px;
+      padding: 18px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -284,13 +242,13 @@
     }
     
     .modal-content {
-      padding: 20px;
+      padding: 25px;
       max-height: 75vh;
       overflow-y: auto;
     }
     
     /************************************************
-    QUIZ
+    EXAM RUNTIME QUIZ ENVIRONMENT
     ************************************************/
     .quiz-wrapper {
       max-width: 1000px;
@@ -300,69 +258,82 @@
     .quiz-topbar {
       background: white;
       border-radius: 12px;
-      padding: 15px;
+      padding: 15px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }
     
     .timer {
       color: #dc2626;
       font-size: 26px;
       font-weight: 700;
+      font-variant-numeric: tabular-nums;
     }
     
     .question-card {
       background: white;
       border-radius: 14px;
-      padding: 25px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      padding: 30px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
     }
     
     .question-text {
       font-size: 22px;
       line-height: 1.5;
       margin-bottom: 20px;
+      font-weight: 600;
+      color: #0f172a;
+    }
+    
+    .question-image-wrapper {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      overflow: hidden;
     }
     
     .question-image {
       max-width: 100%;
       height: auto;
       border-radius: 8px;
-      margin-bottom: 20px;
       max-height: 300px;
+      display: block;
     }
     
     .option {
-      border: 1px solid #d1d5db;
+      border: 1px solid #e2e8f0;
       border-radius: 10px;
-      padding: 15px;
+      padding: 15px 20px;
       margin-bottom: 12px;
       cursor: pointer;
-      transition: 0.15s;
+      transition: all 0.15s ease-in-out;
+      font-size: 16px;
+      font-weight: 500;
+      color: #334155;
     }
     
     .option:hover {
       background: #f8fafc;
+      border-color: #cbd5e1;
     }
     
     .option.selected {
       background: #dbeafe;
       border: 2px solid #2563eb;
+      color: #1e40af;
     }
     
     .quiz-nav {
       display: flex;
       justify-content: space-between;
-      margin-top: 20px;
-      gap: 10px;
+      margin-top: 25px;
+      gap: 12px;
     }
     
-    /************************************************
-    PALETTE
-    ************************************************/
     .palette {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
@@ -376,21 +347,14 @@
       border-radius: 8px;
       cursor: pointer;
       font-weight: 600;
-      transition: 0.2s;
+      transition: all 0.15s ease;
     }
     
-    .palette-unanswered {
-      background: #e5e7eb;
-      color: #4b5563;
-    }
-    
-    .palette-answered {
-      background: #16a34a;
-      color: white;
-    }
+    .palette-unanswered { background: #e5e7eb; color: #4b5563; }
+    .palette-answered { background: #16a34a; color: white; }
     
     /************************************************
-    SCORECARD
+    EVALUATION METRICS & SCORECARD
     ************************************************/
     .score-wrapper {
       max-width: 1100px;
@@ -399,39 +363,32 @@
     
     .score-summary {
       background: white;
-      padding: 25px;
+      padding: 30px;
       border-radius: 14px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      margin-bottom: 25px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
     }
     
     .score-big {
       font-size: 56px;
       font-weight: 700;
       color: #2563eb;
+      margin: 15px 0;
     }
     
     .review-card {
       background: white;
       border-radius: 12px;
-      padding: 20px;
-      margin-top: 15px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-      page-break-inside: avoid;
+      padding: 25px;
+      margin-top: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
     }
     
-    .correct {
-      color: #16a34a;
-      font-weight: 700;
-    }
-    
-    .incorrect {
-      color: #dc2626;
-      font-weight: 700;
-    }
+    .correct { color: #16a34a; font-weight: 700; }
+    .incorrect { color: #dc2626; font-weight: 700; }
     
     /************************************************
-    LOADER
+    GLOBAL SCREEN INTERFACE LOADING ELEMENT
     ************************************************/
     .loader-overlay {
       position: fixed;
@@ -439,28 +396,21 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(255,255,255,0.8);
+      background: rgba(255,255,255,0.85);
       z-index: 999999;
       display: none;
       justify-content: center;
       align-items: center;
     }
     
-    .loader-overlay.active {
-      display: flex;
-    }
-    
-    .loader-box {
-      text-align: center;
-    }
-    
+    .loader-overlay.active { display: flex; }
     .spinner {
       width: 60px;
       height: 60px;
-      border: 5px solid #d1d5db;
+      border: 5px solid #e2e8f0;
       border-top: 5px solid #2563eb;
       border-radius: 50%;
-      animation: spin 1s linear infinite;
+      animation: spin 0.8s linear infinite;
       margin: auto;
       margin-bottom: 15px;
     }
@@ -470,14 +420,11 @@
       to { transform: rotate(360deg); }
     }
     
-    /************************************************
-    FOOTER
-    ************************************************/
     .footer {
       background: #0f172a;
       color: white;
       margin-top: 60px;
-      padding: 30px;
+      padding: 40px 20px;
       text-align: center;
     }
     
@@ -485,136 +432,86 @@
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
-      gap: 20px;
-      margin-bottom: 15px;
+      gap: 25px;
+      margin-bottom: 20px;
     }
     
     .footer-links a {
       cursor: pointer;
       text-decoration: none;
       color: #94a3b8;
-      transition: 0.2s;
+      transition: color 0.15s ease;
     }
     
-    .footer-links a:hover {
-      color: white;
-    }
+    .footer-links a:hover { color: white; }
     
-    /************************************************
-    NOTIFICATION
-    ************************************************/
     .notification {
       position: fixed;
       top: 20px;
       right: 20px;
       background: white;
-      padding: 15px 20px;
+      padding: 15px 25px;
       border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      z-index: 10000;
-      animation: slideIn 0.3s ease;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+      z-index: 100000;
+      animation: slideIn 0.25s cubic-bezier(0, 0, 0.2, 1) forwards;
+      font-weight: 600;
     }
     
     @keyframes slideIn {
-      from { transform: translateX(400px); }
+      from { transform: translateX(120%); }
       to { transform: translateX(0); }
     }
     
-    .notification.success {
-      border-left: 4px solid #16a34a;
-      color: #15803d;
-    }
-    
-    .notification.error {
-      border-left: 4px solid #dc2626;
-      color: #991b1b;
-    }
+    .notification.success { border-left: 4px solid #16a34a; color: #15803d; }
+    .notification.error { border-left: 4px solid #dc2626; color: #991b1b; }
     
     /************************************************
-    PDF PRINT
+    STRICT COMPREHENSIVE PRINT STYLE COVERAGE
     ************************************************/
     @media print {
-      body {
-        background: white;
-      }
-      .no-print {
-        display: none !important;
-      }
+      body { background: white; color: black; }
+      .no-print { display: none !important; }
+      .container { padding: 0; }
       .review-card {
-        page-break-inside: avoid;
+        page-break-inside: avoid !important;
+        border: 1px solid #e2e8f0;
+        box-shadow: none;
+        margin-top: 15px;
       }
     }
     
-    /************************************************
-    RESPONSIVE
-    ************************************************/
     @media (max-width: 768px) {
-      .hero h1 {
-        font-size: 34px;
-      }
-      
-      .hero p {
-        font-size: 16px;
-      }
-      
-      .section-title {
-        font-size: 22px;
-      }
-      
-      .quiz-topbar {
-        flex-direction: column;
-        gap: 10px;
-      }
-      
-      .timer {
-        font-size: 22px;
-      }
-      
-      .question-text {
-        font-size: 18px;
-      }
-      
-      .quiz-nav {
-        flex-direction: column;
-      }
-      
-      .btn {
-        width: 100%;
-      }
-      
-      .card-grid {
-        grid-template-columns: 1fr;
-      }
+      .hero h1 { font-size: 34px; }
+      .hero p { font-size: 16px; }
+      .quiz-topbar { flex-direction: column; gap: 10px; text-align: center; }
+      .quiz-nav { flex-direction: column; }
+      .btn { width: 100%; }
+      .card-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
   <div id="loaderOverlay" class="loader-overlay">
-    <div class="loader-box">
+    <div style="text-align: center;">
       <div class="spinner"></div>
-      <div>Loading...</div>
+      <div style="font-weight: 600; color: #334155;">Accessing Database Systems...</div>
     </div>
   </div>
 
   <div id="modalRoot"></div>
-
   <div id="app"></div>
 
   <script>
-
     /*****************************************************
-     CONFIGURATION
+     GLOBAL PRODUCTION ARCHITECTURE STRUCUTURE CONFIG
     *****************************************************/
-    
     const CONFIG = {
+      // Paste your deployed Google Apps Script Web App URL exactly here
       APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyt4Riap1dC7V_kwXCErNtiAwabcAUfpt1BuMlYGUT7ZNTHAEqWpNjrnOhGk68xgA0O/exec"
     };
 
-    /*****************************************************
-     GLOBAL APP STATE
-    *****************************************************/
-    
     const APP = {
       portalData: null,
       config: {},
@@ -633,12 +530,8 @@
       result: null
     };
 
-    const SESSION_KEY = "JMT_SESSION";
-    const QUESTION_KEY = "JMT_QUESTIONS";
-
-    /*****************************************************
-     INITIALIZATION
-    *****************************************************/
+    const SESSION_KEY = "JMT_SESSION_ENGINE_DATA";
+    const QUESTION_KEY = "JMT_PERMANENT_QUESTION_POOL";
 
     document.addEventListener("DOMContentLoaded", function() {
       bootApplication();
@@ -650,73 +543,50 @@
     }
 
     /*****************************************************
-     API CALLS USING FETCH
+     FIXED API CLIENT ROUTINE (Appends All URL Parameters)
     *****************************************************/
-
-    async function callAppsScript(action, params = {}) {
-  try {
-    showLoader();
-    
-    let url = CONFIG.APPS_SCRIPT_URL + "?action=" + action;
-    
-    if (action === "generateExam") {
-      url += "&sheetName=" + params.sheetName + "&count=" + params.count;
-    }
-    if (action === "generateCustomTest") {
-      url += "&topics=" + encodeURIComponent(JSON.stringify(params.topics));
-      url += "&count=" + params.count;
-    }
-    if (action === "getPolicy") {
-      url += "&sheetName=" + params.sheetName;
-    }
-    
-    const response = await fetch(url);
-    const data = await response.json();
-    
-    hideLoader();
-    return data;
-    
-  } catch (error) {
-    hideLoader();
-    showNotification("API Error: " + error.message, "error");
-    console.error("API Error:", error);
-    return null;
-  }
-}
-
-    /*****************************************************
-     LOADER CONTROL
-    *****************************************************/
-
-    function showLoader() {
-      document.getElementById("loaderOverlay").classList.add("active");
+    async function callAppsScript(functionName, parameters = {}) {
+      try {
+        showLoader();
+        
+        // Build URL matching standard web app spec queries
+        const queryBuilder = new URLSearchParams({ action: functionName, ...parameters });
+        const finalUrl = CONFIG.APPS_SCRIPT_URL + "?" + queryBuilder.toString();
+        
+        const response = await fetch(finalUrl);
+        if (!response.ok) throw new Error("HTTP Network Error Status: " + response.status);
+        
+        const responseText = await response.text();
+        const responseData = JSON.parse(responseText);
+        
+        hideLoader();
+        return responseData;
+      } catch (error) {
+        hideLoader();
+        showNotification("Application Sync Failure: " + error.message, "error");
+        console.error("API Error context:", error);
+        return null;
+      }
     }
 
-    function hideLoader() {
-      document.getElementById("loaderOverlay").classList.remove("active");
-    }
-
-    /*****************************************************
-     FETCH PORTAL DATA
-    *****************************************************/
+    function showLoader() { document.getElementById("loaderOverlay").classList.add("active"); }
+    function hideLoader() { document.getElementById("loaderOverlay").classList.remove("active"); }
 
     async function loadPortalData() {
       const data = await callAppsScript("getPortalData");
-      
-      if (data) {
+      if (data && !data.error) {
         APP.portalData = data;
         APP.config = data.config || {};
         renderHome();
         attemptResumeQuiz();
       } else {
-        showNotification("Failed to load application data", "error");
+        showNotification("Critical System Initiation Interrupted.", "error");
       }
     }
 
     /*****************************************************
-     HOME RENDER
+     DYNAMIC DESIGN UI RENDER LOGIC
     *****************************************************/
-
     function renderHome() {
       const siteName = APP.config.SITE_NAME || "Just Mock Tests";
       const tagline = APP.config.TAGLINE || "No Email, No Phone, No Spam — Just Net Practice for you";
@@ -726,42 +596,30 @@
         <div class="hero">
           <h1>${siteName}</h1>
           <p>${tagline}</p>
-          <div class="disclaimer">
-            Practice tests only. Not affiliated with any government body.
-          </div>
+          <div class="disclaimer">Practice evaluation engine layout. Not affiliated with any governmental organization.</div>
         </div>
-
         <div class="container">
       `;
 
       if (sandboxMode) {
-        html += `
-          <div class="sandbox-banner">
-            ⚠️ SANDBOX MODE — Testing Only (No Payment Required)
-          </div>
-        `;
+        html += `<div class="sandbox-banner">⚠️ SANDBOX / DEVELOPMENT TEST MODE INSTANTIATED — Zero Payment Transaction Processing Enforced</div>`;
       }
 
       html += `
           <div class="custom-builder">
             <h2>🎛️ Customise Your Test</h2>
-            <p>Build your own test by combining multiple topics.</p>
+            <p>Compile a tailored unified assessment by selecting multiple specific evaluation headers simultaneously.</p>
             <br>
-            <button class="btn btn-primary full-width" onclick="openCustomBuilder()">
-              Create Custom Test
-            </button>
+            <button class="btn btn-primary full-width" onclick="openCustomBuilder()">Create Custom Test</button>
           </div>
-
           <div class="section">
             <div class="section-title">Full Mock Exams Available</div>
             <div id="examGrid" class="card-grid"></div>
           </div>
-
           <div class="section">
             <div class="section-title">Individual Topics Practice</div>
             <div id="topicGrid" class="card-grid"></div>
           </div>
-
           <div id="footerContainer"></div>
         </div>
       `;
@@ -772,101 +630,55 @@
       renderFooter();
     }
 
-    /*****************************************************
-     RENDER EXAM CARDS
-    *****************************************************/
-
     function renderExamCards() {
-      const holder = document.getElementById("examGrid");
+      const target = document.getElementById("examGrid");
       let html = "";
-
       if (APP.portalData.exams && APP.portalData.exams.length > 0) {
-        APP.portalData.exams.forEach(exam => {
-          html += `
-            <div class="exam-card" onclick="selectTest('${exam.sheet}', '${exam.label}', 'EXAM')">
-              <h3>${exam.label}</h3>
-            </div>
-          `;
+        APP.portalData.exams.forEach(item => {
+          html += `<div class="exam-card" onclick="selectTest('${item.sheet}', '${escapeForJavaScript(item.label)}', 'EXAM')"><h3>${item.label}</h3></div>`;
         });
-      } else {
-        html = "<p>No exams available</p>";
-      }
-
-      holder.innerHTML = html;
+      } else { html = "<p>No active workspace standard exams found.</p>"; }
+      target.innerHTML = html;
     }
-
-    /*****************************************************
-     RENDER TOPIC CARDS
-    *****************************************************/
 
     function renderTopicCards() {
-      const holder = document.getElementById("topicGrid");
+      const target = document.getElementById("topicGrid");
       let html = "";
-
       if (APP.portalData.topics && APP.portalData.topics.length > 0) {
-        APP.portalData.topics.forEach(topic => {
-          html += `
-            <div class="exam-card" onclick="selectTest('${topic.sheet}', '${topic.label}', 'TOPIC')">
-              <h3>${topic.label}</h3>
-            </div>
-          `;
+        APP.portalData.topics.forEach(item => {
+          html += `<div class="exam-card" onclick="selectTest('${item.sheet}', '${escapeForJavaScript(item.label)}', 'TOPIC')"><h3>${item.label}</h3></div>`;
         });
-      } else {
-        html = "<p>No topics available</p>";
-      }
-
-      holder.innerHTML = html;
+      } else { html = "<p>No modular individual chapter targets available.</p>"; }
+      target.innerHTML = html;
     }
 
-    /*****************************************************
-     RENDER FOOTER
-    *****************************************************/
-
     function renderFooter() {
-      let html = `<div class="footer">
-        <div class="footer-links">`;
-
+      let html = `<div class="footer"><div class="footer-links">`;
       if (APP.portalData.policies && APP.portalData.policies.length > 0) {
-        APP.portalData.policies.forEach(policy => {
-          html += `<a onclick="openPolicy('${policy.sheet}')">${policy.label}</a>`;
+        APP.portalData.policies.forEach(p => {
+          html += `<a onclick="openPolicy('${p.sheet}')">${p.label}</a>`;
         });
       }
-
-      html += `
-        </div>
-        <br>
-        <div>© ${new Date().getFullYear()} ${APP.config.SITE_NAME || 'Just Mock Tests'}</div>
-      </div>`;
-
+      html += `</div><br><div>© ${new Date().getFullYear()} ${APP.config.SITE_NAME || 'Just Mock Tests'}</div></div>`;
       document.getElementById("footerContainer").innerHTML = html;
     }
 
     /*****************************************************
-     TEST SELECTION
+     3-STEP USER PLACEMENT ROUTINE MAPPING
     *****************************************************/
-
     function selectTest(sheetName, label, mode) {
       APP.currentExam = sheetName;
       APP.currentTopics = [sheetName];
       APP.currentMode = mode;
 
       const html = `
-        <h3>Select Test Length</h3>
-        <br>
-        <button class="btn btn-primary full-width" onclick="selectLength(25)">
-          Take a 25 Question Test
-        </button>
-        <br><br>
-        <button class="btn btn-primary full-width" onclick="selectLength(50)">
-          Take a 50 Question Test
-        </button>
-        <br><br>
-        <button class="btn btn-primary full-width" onclick="selectLength(100)">
-          Take a 100 Question Test
-        </button>
+        <h3 style="margin-bottom:15px;">Configure Question Volume Parameters:</h3>
+        <button class="btn btn-primary full-width" onclick="selectLength(25)">Take a 25 Question Test</button><br><br>
+        <button class="btn btn-primary full-width" onclick="selectLength(50)">Take a 50 Question Test</button><br><br>
+        <button class="btn btn-primary full-width" onclick="selectLength(100)">Take a 100 Question Test</button><br><br>
+        <button class="btn btn-secondary full-width" onclick="closeModal()">Go Back</button>
       `;
-
-      openModal("Choose Test Length", html);
+      openModal("Step 1: Choose Evaluation Matrix Length", html);
     }
 
     function selectLength(length) {
@@ -875,162 +687,147 @@
       setTimeout(openInstructionGateway, 300);
     }
 
-    /*****************************************************
-     INSTRUCTION GATEWAY
-    *****************************************************/
-
     function openInstructionGateway() {
       const amount = getPriceForCount(APP.currentLength);
-
       const html = `
-        <h3>Test Instructions</h3>
-        <br>
-        <p>Selected Questions: <b>${APP.currentLength}</b></p>
-        <br>
-        <p>Upon submission, a printable PDF scorecard will download directly to your desktop.</p>
-        <br>
-        <div style="background: #eff6ff; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
-          <strong>Price: ₹${amount}</strong>
+        <div style="line-height:1.6;">
+          <p>Selected Target Items Count: <strong>${APP.currentLength} Questions</strong></p>
+          <p style="margin-top:8px; color:#475569;">💡 <em>Notification: Upon submission, a printable PDF scorecard will download directly to your desktop.</em></p>
+          <br>
+          <div style="background: #eff6ff; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
+            <strong style="font-size:18px; color:#1e40af;">Registration Processing Fee: ₹${amount} INR</strong>
+          </div>
+          <label style="font-weight:600; display:block; margin-bottom:6px;">Candidate Validation Name Identity:</label>
+          <input id="candidateName" class="input" placeholder="Enter Full Professional Name Here" maxlength="50">
+          <br><br>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="checkbox" id="termsCheck" style="transform: scale(1.2); cursor:pointer;">
+            <label for="termsCheck" style="margin: 0; cursor:pointer; font-weight:500;">I Explicitly Agree to Terms, Conditions, and Security Protocols.</label>
+          </div>
+          <br>
+          <button class="btn btn-success full-width" onclick="proceedToPayment()">Proceed To Verification Pipeline</button>
         </div>
-        <br>
-        <input id="candidateName" class="input" placeholder="Full Name" maxlength="50">
-        <br><br>
-        <div style="display: flex; gap: 10px; align-items: center;">
-          <input type="checkbox" id="termsCheck">
-          <label style="margin: 0;">I Agree To Terms & Conditions</label>
-        </div>
-        <br>
-        <button class="btn btn-success full-width" onclick="proceedToPayment()">
-          Proceed To Pay
-        </button>
       `;
-
-      openModal("Instructions", html);
+      openModal("Step 2: Instruction Validation Gateway", html);
     }
 
     function getPriceForCount(count) {
-      const prices = {
+      const baseMap = {
         25: Number(APP.config.PRICE_25 || 10),
         50: Number(APP.config.PRICE_50 || 20),
         100: Number(APP.config.PRICE_100 || 40)
       };
-      return prices[count] || 0;
+      return baseMap[count] || 0;
     }
 
     /*****************************************************
-     PAYMENT FLOW
+     GATEWAY HANDLING & FRICTIONLESS DATA MASKING
     *****************************************************/
-
     function proceedToPayment() {
       const name = document.getElementById("candidateName").value.trim();
       const agreed = document.getElementById("termsCheck").checked;
 
-      if (!name) {
-        showNotification("Please enter your full name", "error");
-        return;
-      }
-
-      if (!agreed) {
-        showNotification("Please agree to Terms & Conditions", "error");
-        return;
-      }
+      if (!name) { showNotification("Validation Interrupted: Complete Candidate Name Required.", "error"); return; }
+      if (!agreed) { showNotification("Security Error: Validation of terms required.", "error"); return; }
 
       APP.candidateName = name;
       closeModal();
 
-      const sandboxMode = APP.config.SANDBOX_MODE === "true" || APP.config.SANDBOX_MODE === true;
+      /*****************************************************
+       MODULE 8: FRICTIONAL DATA MASKING ROUTINE INTERFACE
+       Synthesizes secure credential structures cleanly
+       *****************************************************/
+      const cleanAliasString = name.toLowerCase().replace(/[^a-z0-9]/g, "_");
+      const synthesizedPayload = {
+        name: name,
+        email: `${cleanAliasString}_mock@testportal.com`,
+        phone: "9999999999",
+        amount: getPriceForCount(APP.currentLength),
+        currency: "INR"
+      };
+      console.log("Synthesized Anonymous Gateway Credentials Encapsulated:", synthesizedPayload);
 
+      const sandboxMode = APP.config.SANDBOX_MODE === "true" || APP.config.SANDBOX_MODE === true;
       if (sandboxMode) {
-        showNotification("✅ Sandbox Mode - Starting test...", "success");
+        showNotification("Sandbox Access Validated. Launching secure session execution matrices...", "success");
         setTimeout(launchExam, 1000);
       } else {
-        setTimeout(showPaymentGateway, 300);
+        setTimeout(() => { showLivePaymentGateway(synthesizedPayload); }, 300);
       }
     }
 
-    function showPaymentGateway() {
-      const amount = getPriceForCount(APP.currentLength);
-
+    /*****************************************************
+     RAZORPAY EXPANSION PLACEMENT STUB CHANNELS
+     Modular boundaries set here for easy integration
+     *****************************************************/
+    function showLivePaymentGateway(maskedPayload) {
       const html = `
-        <h2>Payment Gateway</h2>
-        <br>
-        <div style="background: #eff6ff; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
-          <strong>Amount Payable: ₹${amount}</strong>
-        </div>
-        <br>
-        <div style="text-align: center;">
-          <div style="width: 220px; height: 220px; background: #f3f4f6; border: 2px dashed #94a3b8; margin: auto; display: flex; align-items: center; justify-content: center; border-radius: 12px;">
-            QR CODE
+        <div style="text-align: center; line-height:1.6;">
+          <h3>Secured Transaction Interface Portal</h3>
+          <p style="color:#64748b; font-size:14px; margin-bottom:15px;">Transaction Route Configuration: RAZORPAY_DROP_IN_STUB</p>
+          <div style="background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 20px; border:1px solid #e2e8f0;">
+            <strong style="color:#0f172a;">Amount Due: ₹${maskedPayload.amount} INR</strong>
           </div>
+          <div style="width: 200px; height: 200px; background: #f1f5f9; border: 2px dashed #cbd5e1; margin: 15px auto; display: flex; align-items: center; justify-content: center; font-weight:600; color:#94a3b8; border-radius:12px;">
+            MOCK GATEWAY QR
+          </div>
+          <p style="font-size:13px; color:#ef4444; font-weight:600; margin-bottom:15px;">⚠️ The assessment will start immediately after payment confirmation. Do not close this window.</p>
+          <button class="btn btn-success full-width" onclick="confirmPayment()">Trigger Settlement Simulation Connection</button>
         </div>
-        <br>
-        <button class="btn btn-success full-width" onclick="confirmPayment()">
-          Confirm Payment
-        </button>
       `;
-
-      openModal("Payment Gateway", html);
+      openModal("Step 3: Gateway Checkout Engine Execution", html);
     }
 
     function confirmPayment() {
-      showNotification("✅ Payment Successful!", "success");
+      showNotification("Payment Captured Successfully. Starting session...", "success");
       closeModal();
-      setTimeout(launchExam, 1500);
+      setTimeout(launchExam, 1200);
     }
 
     /*****************************************************
-     CUSTOM TEST BUILDER
+     CUSTOM COMPILATION MODULE ENGINE
     *****************************************************/
-
     function openCustomBuilder() {
       let html = `
-        <h3>Create Custom Test</h3>
-        <br>
-        <label><strong>Question Length</strong></label>
+        <h3 style="margin-bottom:10px;">Build Personalized Test Target</h3>
+        <label style="font-weight:600; display:block; margin-bottom:6px;">Select Question Count Boundary:</label>
         <select id="customLength" class="input" style="margin-bottom: 20px;">
-          <option value="25">25 Questions</option>
-          <option value="50">50 Questions</option>
-          <option value="100">100 Questions</option>
+          <option value="25">25 Standard Questions Matrix</option>
+          <option value="50">50 Aggregated Questions Matrix</option>
+          <option value="100">100 Comprehensive Questions Matrix</option>
         </select>
-        <br>
-        <label><strong>Select Topics</strong></label>
+        <label style="font-weight:600; display:block; margin-bottom:6px;">Select Included Database Topics (Multi-Select):</label>
         <div class="topic-checklist">
       `;
 
       if (APP.portalData.topics && APP.portalData.topics.length > 0) {
-        APP.portalData.topics.forEach(topic => {
+        APP.portalData.topics.forEach(t => {
           html += `
-            <div class="topic-item">
-              <input type="checkbox" class="customTopic" value="${topic.sheet}">
-              <label style="margin: 0; cursor: pointer;">${topic.label}</label>
-            </div>
+            <label class="topic-item">
+              <input type="checkbox" class="customTopic" value="${t.sheet}" style="transform: scale(1.1);">
+              <span>${t.label}</span>
+            </label>
           `;
         });
-      }
+      } else { html += "<p>No individual data structures found available.</p>"; }
 
       html += `
         </div>
         <br>
-        <button class="btn btn-success full-width" onclick="continueCustomBuilder()">
-          Continue
-        </button>
+        <button class="btn btn-success full-width" onclick="continueCustomBuilder()">Verify Blueprint Selection Matrix</button>
       `;
-
-      openModal("Custom Test Builder", html);
+      openModal("Custom Aggregations Builder", html);
     }
 
     function continueCustomBuilder() {
-      const topics = [];
-      document.querySelectorAll(".customTopic").forEach(cb => {
-        if (cb.checked) topics.push(cb.value);
+      const selectedTopics = [];
+      document.querySelectorAll(".customTopic").forEach(box => {
+        if (box.checked) selectedTopics.push(box.value);
       });
 
-      if (topics.length === 0) {
-        showNotification("Select at least one topic", "error");
-        return;
-      }
+      if (selectedTopics.length === 0) { showNotification("Configuration Error: Mark at least one validation topic header.", "error"); return; }
 
-      APP.currentTopics = topics;
+      APP.currentTopics = selectedTopics;
       APP.currentMode = "CUSTOM";
       APP.currentLength = Number(document.getElementById("customLength").value);
 
@@ -1039,63 +836,71 @@
     }
 
     /*****************************************************
-     LAUNCH EXAM
-    *****************************************************/
-
+     DATA HARVEST & SYSTEM COMPLIANCE PREPARATION
+     *****************************************************/
     async function launchExam() {
       showLoader();
-
-      let questions = [];
+      let questionsPayload = null;
 
       if (APP.currentMode === "CUSTOM") {
-        questions = await callAppsScript("generateCustomTest", {
-          topics: APP.currentTopics,
+        questionsPayload = await callAppsScript("generateCustomTest", {
+          topics: JSON.stringify(APP.currentTopics),
           count: APP.currentLength
         });
       } else {
-        questions = await callAppsScript("generateExam", {
+        questionsPayload = await callAppsScript("generateExam", {
           sheetName: APP.currentExam,
           count: APP.currentLength
         });
       }
 
-      if (questions && questions.length > 0) {
-        beginQuiz(questions);
+      if (questionsPayload && Array.isArray(questionsPayload) && questionsPayload.length > 0 && !questionsPayload.error) {
+        beginQuiz(questionsPayload);
       } else {
         hideLoader();
-        showNotification("❌ Failed to load questions. Check your sheet data.", "error");
+        showNotification("Target Processing Terminated: Spreadsheets dataset parsing empty structural parameters.", "error");
       }
     }
 
-    /*****************************************************
-     BEGIN QUIZ
-    *****************************************************/
-
-    function beginQuiz(questions) {
+    function beginQuiz(retrievedQuestions) {
       hideLoader();
-
-      APP.sessionId = generateSessionId();
-      APP.currentQuestions = questions;
+      APP.sessionId = "JMT_SESSION_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+      APP.currentQuestions = retrievedQuestions;
       APP.currentQuestionIndex = 0;
       APP.currentAnswers = {};
       APP.startTime = Date.now();
       APP.countdown = APP.currentLength * 60;
 
+      prepareQuestionOptions();
       saveSession();
       renderQuizPage();
       initializeQuiz();
     }
 
     /*****************************************************
-     QUIZ RENDERING
-    *****************************************************/
+     DYNAMIC OPTION SCRAMBLING & ALIGNMENT FIXES
+     *****************************************************/
+    function prepareQuestionOptions() {
+      APP.currentQuestions = APP.currentQuestions.map(q => {
+        const structuralOptions = [...q.options].filter(o => o && o.toString().trim() !== "");
+        
+        // Strict runtime element scrambling execution
+        for (let i = structuralOptions.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [structuralOptions[i], structuralOptions[j]] = [structuralOptions[j], structuralOptions[i]];
+        }
+        
+        q.scrambledOptions = structuralOptions;
+        return q;
+      });
+    }
 
     function renderQuizPage() {
-      const html = `
+      document.getElementById("app").innerHTML = `
         <div class="container">
           <div class="quiz-wrapper">
             <div class="quiz-topbar">
-              <div><strong>${APP.candidateName}</strong></div>
+              <div>Candidate Identity Reference: <strong style="color:#2563eb;">${APP.candidateName}</strong></div>
               <div id="timerDisplay" class="timer">00:00</div>
             </div>
             <div id="questionContainer"></div>
@@ -1103,84 +908,74 @@
           </div>
         </div>
       `;
-
-      document.getElementById("app").innerHTML = html;
     }
 
     function initializeQuiz() {
-      prepareQuestionOptions();
       renderQuestion();
       renderPalette();
       startTimer();
     }
 
     /*****************************************************
-     QUESTION PREPARATION & RENDERING
-    *****************************************************/
-
-    function prepareQuestionOptions() {
-      APP.currentQuestions = APP.currentQuestions.map(q => {
-        const options = [...q.options];
-        
-        // Shuffle options
-        for (let i = options.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [options[i], options[j]] = [options[j], options[i]];
-        }
-        
-        q.scrambledOptions = options;
-        return q;
-      });
-    }
-
+     QUESTION SELECTION RENDER MATRIX (UI Highlight Fixed)
+     *****************************************************/
     function renderQuestion() {
       const q = APP.currentQuestions[APP.currentQuestionIndex];
 
-      let imageHtml = "";
-      if (q.imageUrl) {
-        imageHtml = `<img src="${q.imageUrl}" class="question-image" alt="Question image" onerror="this.style.display='none'">`;
+      let layoutImageHtml = "";
+      if (q.imageUrl && q.imageUrl.trim() !== "") {
+        layoutImageHtml = `
+          <div class="question-image-wrapper">
+            <img src="${q.imageUrl}" class="question-image" alt="Evaluation visual reference layout" onerror="this.parentNode.style.display='none'">
+          </div>
+        `;
       }
 
-      let optionHtml = "";
+      let dynamicOptionsContent = "";
       q.scrambledOptions.forEach(optionText => {
-        const selected = APP.currentAnswers[APP.currentQuestionIndex] === optionText;
-        optionHtml += `
-          <div class="option ${selected ? 'selected' : ''}" onclick="selectAnswer('${escapeForJavaScript(optionText)}')">
+        // Resolve exactly which original hardcoded token letter matches this shuffled value string
+        let baseLetterMapping = "A";
+        if (optionText === q.optionA) baseLetterMapping = "A";
+        else if (optionText === q.optionB) baseLetterMapping = "B";
+        else if (optionText === q.optionC) baseLetterMapping = "C";
+        else if (optionText === q.optionD) baseLetterMapping = "D";
+
+        // Check if the currently saved selected letter token matches this specific button element
+        const isSelected = APP.currentAnswers[APP.currentQuestionIndex] === baseLetterMapping;
+
+        dynamicOptionsContent += `
+          <div class="option ${isSelected ? 'selected' : ''}" onclick="selectAnswer('${escapeForJavaScript(optionText)}')">
             ${optionText}
           </div>
         `;
       });
 
-      const html = `
+      document.getElementById("questionContainer").innerHTML = `
         <div class="question-card">
-          <div>Question ${APP.currentQuestionIndex + 1} of ${APP.currentQuestions.length}</div>
-          <br>
+          <div style="font-weight:600; color:#64748b; margin-bottom:10px;">Assessment Index Item: ${APP.currentQuestionIndex + 1} of ${APP.currentQuestions.length}</div>
           <div class="question-text">${q.question}</div>
-          ${imageHtml}
-          ${optionHtml}
+          ${layoutImageHtml}
+          <div>${dynamicOptionsContent}</div>
           <div class="quiz-nav">
-            <button class="btn btn-secondary" onclick="previousQuestion()" ${APP.currentQuestionIndex === 0 ? 'disabled' : ''}>Previous</button>
-            <button class="btn btn-primary" onclick="nextQuestion()">Next</button>
-            <button class="btn btn-success" onclick="confirmSubmit()">Submit Test</button>
+            <button class="btn btn-secondary" onclick="previousQuestion()" ${APP.currentQuestionIndex === 0 ? 'disabled' : ''}>Previous Question</button>
+            <button class="btn btn-primary" onclick="nextQuestion()">Next Question</button>
+            <button class="btn btn-success" onclick="confirmSubmit()">Submit Entire Assessment</button>
           </div>
         </div>
       `;
-
-      document.getElementById("questionContainer").innerHTML = html;
     }
 
     function selectAnswer(optionText) {
       const q = APP.currentQuestions[APP.currentQuestionIndex];
       
-      // Find which letter (A, B, C, D) corresponds to this option
-      let selectedLetter = "A";
-      if (optionText === q.optionA) selectedLetter = "A";
-      else if (optionText === q.optionB) selectedLetter = "B";
-      else if (optionText === q.optionC) selectedLetter = "C";
-      else if (optionText === q.optionD) selectedLetter = "D";
+      let assignedToken = "A";
+      if (optionText === q.optionA) assignedToken = "A";
+      else if (optionText === q.optionB) assignedToken = "B";
+      else if (optionText === q.optionC) assignedToken = "C";
+      else if (optionText === q.optionD) assignedToken = "D";
       
-      // Store the letter, not the text
-      APP.currentAnswers[APP.currentQuestionIndex] = selectedLetter;
+      // Store the true data comparison token safely
+      APP.currentAnswers[APP.currentQuestionIndex] = assignedToken;
       
       saveSession();
       renderQuestion();
@@ -1207,16 +1002,14 @@
 
     function renderPalette() {
       let html = `<div class="palette">`;
-
-      APP.currentQuestions.forEach((q, index) => {
-        const answered = APP.currentAnswers[index] !== undefined;
+      APP.currentQuestions.forEach((_, index) => {
+        const hasAnswered = APP.currentAnswers[index] !== undefined;
         html += `
-          <button class="palette-btn ${answered ? 'palette-answered' : 'palette-unanswered'}" onclick="jumpToQuestion(${index})">
+          <button class="palette-btn ${hasAnswered ? 'palette-answered' : 'palette-unanswered'}" onclick="jumpToQuestion(${index})">
             ${index + 1}
           </button>
         `;
       });
-
       html += `</div>`;
       document.getElementById("paletteContainer").innerHTML = html;
     }
@@ -1229,9 +1022,8 @@
     }
 
     /*****************************************************
-     TIMER
-    *****************************************************/
-
+     DURABLE RUNTIME CLOCK MECHANICS
+     *****************************************************/
     function startTimer() {
       if (APP.countdownInterval) clearInterval(APP.countdownInterval);
       updateTimerDisplay();
@@ -1243,35 +1035,39 @@
 
         if (APP.countdown <= 0) {
           clearInterval(APP.countdownInterval);
+          showNotification("Timeout boundary enforced. Auto-compiling results submission matrix...", "error");
           submitQuiz();
         }
       }, 1000);
     }
 
     function updateTimerDisplay() {
-      const mins = Math.floor(APP.countdown / 60);
-      const secs = APP.countdown % 60;
-      const el = document.getElementById("timerDisplay");
-      if (el) {
-        el.innerText = String(mins).padStart(2, "0") + ":" + String(secs).padStart(2, "0");
+      const minutes = Math.floor(APP.countdown / 60);
+      const seconds = APP.countdown % 60;
+      const targetElement = document.getElementById("timerDisplay");
+      if (targetElement) {
+        targetElement.innerText = String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
       }
     }
 
     /*****************************************************
-     SUBMIT QUIZ
-    *****************************************************/
-
+     EVALUATION PIPELINE & SCORECARD ASSEMBLER
+     *****************************************************/
     function confirmSubmit() {
-      const answered = Object.keys(APP.currentAnswers).length;
-      const total = APP.currentQuestions.length;
+      const filledCount = Object.keys(APP.currentAnswers).length;
+      const totalCount = APP.currentQuestions.length;
 
       const html = `
-        <p>Answered: <b>${answered}</b> of <b>${total}</b></p>
-        <br>
-        <button class="btn btn-success" onclick="finalSubmit()">Yes, Submit Test</button>
+        <div style="text-align:center; line-height:1.6;">
+          <p style="font-size:16px;">Current Progress Footprint: <strong>${filledCount} Resolved</strong> out of <strong>${totalCount} Total</strong></p>
+          <p style="margin-top:10px; color:#ef4444; font-weight:600;">Are you absolutely confident you want to seal answers and break connection parameters now?</p>
+          <br>
+          <button class="btn btn-success" onclick="finalSubmit()">Execute Terminal Submission Sequence</button>
+          <br><br>
+          <button class="btn btn-secondary" onclick="closeModal()">Return Back To Workspace</button>
+        </div>
       `;
-
-      openModal("Submit Test", html);
+      openModal("Confirm Terminal Submission Action", html);
     }
 
     function finalSubmit() {
@@ -1281,37 +1077,35 @@
 
     function submitQuiz() {
       if (APP.countdownInterval) clearInterval(APP.countdownInterval);
-
       showLoader();
 
-      // Calculate results locally
-      let score = 0;
-      const review = [];
+      let accurateHits = 0;
+      const assessmentAuditPayload = [];
 
-      APP.currentQuestions.forEach((q, index) => {
-        const userAnswer = APP.currentAnswers[index];
-        const isCorrect = userAnswer === q.answer;
+      APP.currentQuestions.forEach((questionItem, index) => {
+        const clientSelectedToken = APP.currentAnswers[index];
+        const confirmationFlag = clientSelectedToken === questionItem.answer;
 
-        if (isCorrect) score++;
+        if (confirmationFlag) accurateHits++;
 
-        review.push({
-          question: q.question,
-          selected: userAnswer || "Not Answered",
-          answer: q.answer,
-          explanation: q.explanation,
-          correct: isCorrect
+        assessmentAuditPayload.push({
+          question: questionItem.question,
+          selected: clientSelectedToken || "Not Answered",
+          answer: questionItem.answer,
+          explanation: questionItem.explanation,
+          correct: confirmationFlag
         });
       });
 
-      const accuracy = Math.round((score / APP.currentQuestions.length) * 100);
-      const elapsedSeconds = Math.floor((Date.now() - APP.startTime) / 1000);
+      const precisionRatio = Math.round((accurateHits / APP.currentQuestions.length) * 100);
+      const calculatedDurationInSeconds = Math.floor((Date.now() - APP.startTime) / 1000);
 
       APP.result = {
-        score: score,
+        score: accurateHits,
         totalQuestions: APP.currentQuestions.length,
-        accuracy: accuracy,
-        review: review,
-        elapsedSeconds: elapsedSeconds
+        accuracy: precisionRatio,
+        review: assessmentAuditPayload,
+        elapsedSeconds: calculatedDurationInSeconds
       };
 
       hideLoader();
@@ -1319,55 +1113,46 @@
       renderScorecardPage();
     }
 
-    /*****************************************************
-     SCORECARD PAGE
-    *****************************************************/
-
     function renderScorecardPage() {
-      const result = APP.result;
-      const mins = Math.floor(result.elapsedSeconds / 60);
-      const secs = result.elapsedSeconds % 60;
+      const metrics = APP.result;
+      const minutesRepresentation = Math.floor(metrics.elapsedSeconds / 60);
+      const secondsRepresentation = metrics.elapsedSeconds % 60;
 
       let html = `
         <div class="container">
           <div class="score-wrapper">
             <div id="pdfArea">
               <div class="score-summary">
-                <h1>🎉 Test Completed</h1>
+                <h1 style="color:#0f172a; border-bottom:2px solid #e2e8f0; padding-bottom:10px;">🎉 Examination Evaluation Metrics Matrix</h1>
                 <br>
-                <div>Candidate: <strong>${APP.candidateName}</strong></div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; font-size:16px;">
+                  <div>Verified Candidate: <strong>${APP.candidateName}</strong></div>
+                  <div>Items Analyzed: <strong>${metrics.totalQuestions} Questions Pool</strong></div>
+                  <div>Temporal Duration Footprint: <strong>${minutesRepresentation}m ${secondsRepresentation}s</strong></div>
+                  <div>Precision Evaluation Density: <strong>${metrics.accuracy}% Accuracy</strong></div>
+                </div>
                 <br>
-                <div>Questions: <strong>${result.totalQuestions}</strong></div>
-                <br>
-                <div>Time Elapsed: <strong>${mins}m ${secs}s</strong></div>
-                <br>
-                <div class="score-big">${result.score}/${result.totalQuestions}</div>
-                <br>
-                <div>Accuracy: <strong>${result.accuracy}%</strong></div>
+                <div style="font-weight:700; color:#64748b; font-size:14px; text-transform:uppercase;">Metric Scoring Result Summary:</div>
+                <div class="score-big">${metrics.score} / ${metrics.totalQuestions}</div>
               </div>
-
-              <div style="margin-top: 30px;">
-                <h2>Question Review</h2>
+              <div style="margin-top: 35px; margin-bottom:15px;">
+                <h2 style="color:#0f172a; padding-bottom:5px; border-bottom:2px solid #2563eb; display:inline-block;">Granular Question Review Audit Log</h2>
               </div>
       `;
 
-      result.review.forEach((item, index) => {
-        const correctAnswerText = getOptionTextForLetter(APP.currentQuestions[index], item.answer);
-        const userAnswerText = getOptionTextForLetter(APP.currentQuestions[index], item.selected);
+      metrics.review.forEach((item, index) => {
+        const questionContext = APP.currentQuestions[index];
+        const trueSolutionString = getOptionTextViaToken(questionContext, item.answer);
+        const playerResponseString = getOptionTextViaToken(questionContext, item.selected);
 
         html += `
           <div class="review-card">
-            <div><strong>Question ${index + 1}</strong></div>
-            <br>
-            <div>${APP.currentQuestions[index].question}</div>
-            <br>
-            <div>Your Answer: <strong>${item.selected === "Not Answered" ? "Not Answered" : item.selected + " - " + userAnswerText}</strong></div>
-            <br>
-            <div>Correct Answer: <strong>${item.answer + " - " + correctAnswerText}</strong></div>
-            <br>
-            <div>Result: <span class="${item.correct ? 'correct' : 'incorrect'}">${item.correct ? '✓ Correct' : '✗ Incorrect'}</span></div>
-            <br>
-            <div>Explanation: ${item.explanation || "-"}</div>
+            <div style="font-weight:700; color:#475569; font-size:14px; margin-bottom:8px;">AUDIT INSTANCE ENTRY: ${index + 1}</div>
+            <div style="font-size:18px; font-weight:600; color:#0f172a; margin-bottom:15px;">${questionContext.question}</div>
+            <div style="margin-bottom:6px; font-size:15px;">Candidate Entry Profile: <strong style="color:#334155;">${item.selected === "Not Answered" ? "Not Answered" : item.selected + " — " + playerResponseString}</strong></div>
+            <div style="margin-bottom:6px; font-size:15px;">System True Target Vector: <strong style="color:#0f172a;">${item.answer} — ${trueSolutionString}</strong></div>
+            <div style="margin-bottom:12px; font-size:15px;">Compliance Status Verification: <span class="${item.correct ? 'correct' : 'incorrect'}">${item.correct ? '✓ Clear Match Pass' : '✗ Structural Mismatch Failure'}</span></div>
+            <div style="background:#f8fafc; padding:12px; border-radius:8px; border-left:3px solid #64748b; font-size:14px; color:#475569; line-height:1.5;"><strong>System Resolution Logic Explanation:</strong> ${item.explanation || "No explanatory parsing text provided in source cells."}</div>
           </div>
         `;
       });
@@ -1375,9 +1160,9 @@
       html += `
             </div>
             <br>
-            <div class="no-print" style="display: flex; gap: 10px;">
-              <button class="btn btn-primary" onclick="downloadPDF()">📥 Download PDF</button>
-              <button class="btn btn-secondary" onclick="returnHome()">Back to Home</button>
+            <div class="no-print" style="display: flex; gap:12px; margin-top:20px;">
+              <button class="btn btn-primary full-width" onclick="downloadPDF()">📥 Generate Desktop Print Report Layout (PDF)</button>
+              <button class="btn btn-secondary full-width" onclick="returnHome()">Terminate Core Workspace Context</button>
             </div>
           </div>
         </div>
@@ -1386,79 +1171,66 @@
       document.getElementById("app").innerHTML = html;
     }
 
-    function getOptionTextForLetter(question, letter) {
-      if (letter === "A") return question.optionA || "-";
-      if (letter === "B") return question.optionB || "-";
-      if (letter === "C") return question.optionC || "-";
-      if (letter === "D") return question.optionD || "-";
-      return "-";
+    function getOptionTextViaToken(questionStruct, letterToken) {
+      if (letterToken === "A") return questionStruct.optionA || "Empty Option Field A Reference";
+      if (letterToken === "B") return questionStruct.optionB || "Empty Option Field B Reference";
+      if (letterToken === "C") return questionStruct.optionC || "Empty Option Field C Reference";
+      if (letterToken === "D") return questionStruct.optionD || "Empty Option Field D Reference";
+      return "Not Selected / Unanswered Status Flag";
     }
 
     /*****************************************************
-     PDF DOWNLOAD
-    *****************************************************/
-
+     CLIENT REPORT PRINT COMPILATION (html2pdf.js)
+     *****************************************************/
     function downloadPDF() {
-      const element = document.getElementById("pdfArea");
-      const options = {
-        margin: 0.5,
-        filename: "JustMockTests_" + Date.now() + ".pdf",
-        image: { type: "jpeg", quality: 1 },
-        html2canvas: { scale: 2 },
+      const extractionElement = document.getElementById("pdfArea");
+      const configurationOptions = {
+        margin: [0.4, 0.4, 0.4, 0.4],
+        filename: "JustMockTests_ReportAuditLog_" + Date.now() + ".pdf",
+        image: { type: "jpeg", quality: 1.0 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
         jsPDF: { unit: "in", format: "a4", orientation: "portrait" }
       };
 
-      html2pdf().set(options).from(element).save();
-      showNotification("✅ PDF Downloaded", "success");
+      html2pdf().set(configurationOptions).from(extractionElement).save();
+      showNotification("Report file written completely to desktop system storage.", "success");
     }
 
     /*****************************************************
-     MODAL MANAGEMENT
-    *****************************************************/
-
+     MODAL WINDOW MANAGEMENT CONTROLLER
+     *****************************************************/
     function openModal(title, content) {
-      const html = `
+      document.getElementById("modalRoot").innerHTML = `
         <div class="modal-window">
           <div class="modal-header">
-            <h3>${title}</h3>
+            <h3 style="margin:0; font-size:18px;">${title}</h3>
             <button onclick="closeModal()">×</button>
           </div>
           <div class="modal-content">${content}</div>
         </div>
       `;
-
-      const backdrop = document.getElementById("modalRoot");
-      backdrop.innerHTML = html;
-      backdrop.classList.add("modal-backdrop", "active");
+      document.getElementById("modalRoot").className = "modal-backdrop active";
     }
 
     function closeModal() {
-      const backdrop = document.getElementById("modalRoot");
-      backdrop.classList.remove("active");
-      backdrop.innerHTML = "";
+      const targetModal = document.getElementById("modalRoot");
+      targetModal.className = "modal-backdrop";
+      targetModal.innerHTML = "";
     }
 
-    /*****************************************************
-     POLICY VIEWER
-    *****************************************************/
-
     async function openPolicy(sheetName) {
-      const text = await callAppsScript("getPolicy", { sheetName: sheetName });
-      
-      if (text) {
-        openModal(
-          sheetName.replace("policy_", "").replace(/_/g, " "),
-          `<pre style="white-space: pre-wrap; word-wrap: break-word;">${text}</pre>`
-        );
+      const textResult = await callAppsScript("getPolicy", { sheetName: sheetName });
+      if (textResult && !textResult.error) {
+        const structuralLabel = sheetName.replace("policy_", "").replace(/_/g, " ");
+        openModal(structuralLabel, `<pre style="white-space: pre-wrap; font-family:inherit; line-height:1.6; color:#334155;">${textResult.policy || textResult}</pre>`);
       }
     }
 
     /*****************************************************
-     SESSION PERSISTENCE
-    *****************************************************/
-
+     RECOVERY STRATEGY ARCHITECTURE PERSISTENCE
+     *****************************************************/
     function saveSession() {
-      const session = {
+      const activeStateBlueprint = {
         sessionId: APP.sessionId,
         candidateName: APP.candidateName,
         currentMode: APP.currentMode,
@@ -1469,10 +1241,10 @@
         currentAnswers: APP.currentAnswers,
         startTime: APP.startTime,
         countdown: APP.countdown,
-        savedAt: Date.now()
+        timestampEpoch: Date.now()
       };
 
-      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+      localStorage.setItem(SESSION_KEY, JSON.stringify(activeStateBlueprint));
       localStorage.setItem(QUESTION_KEY, JSON.stringify(APP.currentQuestions));
     }
 
@@ -1483,47 +1255,44 @@
 
     function recoverSession() {
       try {
-        const raw = localStorage.getItem(SESSION_KEY);
-        if (!raw) return;
+        const backupString = localStorage.getItem(SESSION_KEY);
+        if (!backupString) return;
 
-        const data = JSON.parse(raw);
-        const ageHours = (Date.now() - data.savedAt) / (1000 * 60 * 60);
+        const dynamicState = JSON.parse(backupString);
+        const lifespanInHours = (Date.now() - dynamicState.timestampEpoch) / (1000 * 60 * 60);
 
-        if (ageHours > 24) {
-          clearSession();
-          return;
-        }
+        if (lifespanInHours > 24) { clearSession(); return; }
 
-        APP.sessionId = data.sessionId;
-        APP.candidateName = data.candidateName;
-        APP.currentMode = data.currentMode;
-        APP.currentExam = data.currentExam;
-        APP.currentTopics = data.currentTopics;
-        APP.currentLength = data.currentLength;
-        APP.currentQuestionIndex = data.currentQuestionIndex;
-        APP.currentAnswers = data.currentAnswers || {};
-        APP.startTime = data.startTime;
-        APP.countdown = data.countdown;
+        APP.sessionId = dynamicState.sessionId;
+        APP.candidateName = dynamicState.candidateName;
+        APP.currentMode = dynamicState.currentMode;
+        APP.currentExam = dynamicState.currentExam;
+        APP.currentTopics = dynamicState.currentTopics;
+        APP.currentLength = dynamicState.currentLength;
+        APP.currentQuestionIndex = dynamicState.currentQuestionIndex;
+        APP.currentAnswers = dynamicState.currentAnswers || {};
+        APP.startTime = dynamicState.startTime;
+        APP.countdown = dynamicState.countdown;
 
-        const questionData = localStorage.getItem(QUESTION_KEY);
-        if (questionData) {
-          APP.currentQuestions = JSON.parse(questionData);
-        }
-
+        const stringifiedQuestions = localStorage.getItem(QUESTION_KEY);
+        if (stringifiedQuestions) { APP.currentQuestions = JSON.parse(stringifiedQuestions); }
       } catch (error) {
-        console.log("Session recovery error:", error);
+        console.error("Disaster recovery fallback parse failure:", error);
       }
     }
 
     function attemptResumeQuiz() {
       if (APP.currentQuestions && APP.currentQuestions.length > 0) {
         const html = `
-          <p>An unfinished test was found.</p>
-          <br>
-          <button class="btn btn-success" onclick="resumeQuiz()">Resume Test</button>
-          <button class="btn btn-secondary" onclick="closeModal(); clearSession();">Start New Test</button>
+          <div style="text-align:center; line-height:1.6;">
+            <p style="font-size:16px;">An interrupted active assessment run history was successfully tracked to this browser cache matrix profile.</p>
+            <br>
+            <button class="btn btn-success full-width" onclick="resumeQuiz()">Bypass Gates & Resume Progress Stream</button>
+            <br><br>
+            <button class="btn btn-secondary full-width" onclick="closeModal(); clearSession();">Purge Cache & Start Fresh Session</button>
+          </div>
         `;
-        openModal("Resume Test?", html);
+        openModal("Active Session Intercept tracked!", html);
       }
     }
 
@@ -1534,33 +1303,26 @@
     }
 
     /*****************************************************
-     UTILITIES
-    *****************************************************/
-
+     UTILITY SANITIZATION UTILITIES
+     *****************************************************/
     function generateSessionId() {
-      return "JMT_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+      return "JMT_ENGINE_ID_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
     }
 
     function escapeForJavaScript(text) {
       return String(text).replace(/'/g, "\\'").replace(/"/g, '\\"');
     }
 
-    function showNotification(message, type = "info") {
-      const notification = document.createElement("div");
-      notification.className = `notification ${type}`;
-      notification.textContent = message;
-      document.body.appendChild(notification);
+    function showNotification(textMessage, typeNotification = "info") {
+      const nodeElement = document.createElement("div");
+      nodeElement.className = `notification ${typeNotification}`;
+      nodeElement.textContent = textMessage;
+      document.body.appendChild(nodeElement);
 
-      setTimeout(() => {
-        notification.remove();
-      }, 3000);
+      setTimeout(() => { nodeElement.remove(); }, 3500);
     }
 
-    function returnHome() {
-      location.reload();
-    }
-
+    function returnHome() { location.reload(); }
   </script>
-
 </body>
 </html>
