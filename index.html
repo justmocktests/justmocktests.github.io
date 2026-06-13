@@ -215,7 +215,7 @@
 
     function renderHome(){
       var c=APP.config, name=c.SITE_NAME||"Just Mock Tests";
-      var tag=c.TAGLINE||"No Email, No Phone, No Spam — Just Net Practice for you";
+      var tag=c.TAGLINE||"No Email, No Phone, No Spam - Just Net Practice for you";
       var sandbox=String(c.SANDBOX_MODE)==="true";
       var html='<div class="hero"><div class="badge">Online Practice Exams</div><h1>'+esc(name)+'</h1><p>'+esc(tag)+'</p>'+
         '<div class="disclaimer">Practice tests only. Not affiliated with any government or examination body.</div></div><div class="container">';
@@ -289,9 +289,10 @@
     function showRules(){
       openModal("Rules &amp; Regulations",
         '<ul class="rules-list">'+
-          '<li><span class="dot">1</span><span>Your test is about to begin.The Timer will start as soon as Test starts. You get 1 Min per Question. Total Test Duration is Number of Questions multiplied by as many Minutes </span></li>'+
+          '<li><span class="dot">1</span><span>Your test is about to begin.</span></li>'+
           '<li><span class="dot">2</span><span>Your payment has been confirmed.</span></li>'+
           '<li><span class="dot">3</span><span>Answer every question properly.</span></li>'+
+          '<li><span class="dot">3</span><span>Total test duaration will be Number of Questions multiplied by as many Minutes ( 25 Questions = 25 mins, 50 Questions = 50 Minutes, 100 Questions = 100 Minutes.</span></li>'+      
           '<li><span class="dot">4</span><span>If your test is interrupted midway, you can come back &mdash; but make sure you choose the <b>"Resume Test"</b> button.</span></li>'+
           '<li><span class="dot">5</span><span>The PDF download at the end is for your own reference only. It is <b>not</b> a qualification or any sort of certification.</span></li>'+
         '</ul>'+
