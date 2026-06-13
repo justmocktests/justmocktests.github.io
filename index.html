@@ -94,7 +94,8 @@
     .timer{color:var(--red);font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
     .progress-track{height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin-bottom:18px}
     .progress-fill{height:100%;background:linear-gradient(90deg,var(--brand),#3b82f6);width:0;transition:width .3s ease}
-    .question-card{background:#fff;border-radius:var(--radius);padding:26px;box-shadow:var(--shadow)}
+    .question-card{background:#fff;border-radius:var(--radius);padding:26px;box-shadow:var(--shadow);position:relative}
+    .source-tag{position:absolute;top:10px;right:14px;font-size:11px;color:#888;font-style:italic;background:#f4f4f6;padding:3px 9px;border-radius:20px;max-width:55%;text-align:right;line-height:1.3}
     .q-count{color:var(--muted);font-weight:700;font-size:14px;margin-bottom:10px}
     .question-text{font-size:21px;line-height:1.5;margin-bottom:18px;font-weight:600}
     .question-image{max-width:100%;height:auto;border-radius:10px;margin-bottom:18px;max-height:320px}
@@ -215,7 +216,7 @@
 
     function renderHome(){
       var c=APP.config, name=c.SITE_NAME||"Just Mock Tests";
-      var tag=c.TAGLINE||"No Email, No Phone, No Spam - Just Net Practice for you";
+      var tag=c.TAGLINE||"No Email, No Phone, No Spam — Just Net Practice for you";
       var sandbox=String(c.SANDBOX_MODE)==="true";
       var html='<div class="hero"><div class="badge">Online Practice Exams</div><h1>'+esc(name)+'</h1><p>'+esc(tag)+'</p>'+
         '<div class="disclaimer">Practice tests only. Not affiliated with any government or examination body.</div></div><div class="container">';
@@ -247,8 +248,14 @@
     }
 
     /* ============ SELECTION ============ */
+    function labelForSheet(sheet){
+      var lists=[APP.portalData.exams,APP.portalData.topics,APP.portalData.policies];
+      for(var i=0;i<lists.length;i++){ var arr=lists[i]||[]; for(var j=0;j<arr.length;j++){ if(arr[j].sheet===sheet) return arr[j].label; } }
+      return sheet;
+    }
+
     function pick(sheet,mode){
-      APP.exam=sheet; APP.topics=[sheet]; APP.mode=mode;
+      APP.exam=sheet; APP.topics=[sheet]; APP.mode=mode; APP.subjectLabel=labelForSheet(sheet);
       openModal("Choose Test Length",
         '<button class="btn btn-primary full-width" style="margin-bottom:12px" onclick="JMT.len(25)">25 Questions — ₹'+price(25)+'</button>'+
         '<button class="btn btn-primary full-width" style="margin-bottom:12px" onclick="JMT.len(50)">50 Questions — ₹'+price(50)+'</button>'+
@@ -292,7 +299,6 @@
           '<li><span class="dot">1</span><span>Your test is about to begin.</span></li>'+
           '<li><span class="dot">2</span><span>Your payment has been confirmed.</span></li>'+
           '<li><span class="dot">3</span><span>Answer every question properly.</span></li>'+
-          '<li><span class="dot">3</span><span>Total test duaration will be Number of Questions multiplied by as many Minutes ( 25 Questions = 25 mins, 50 Questions = 50 Minutes, 100 Questions = 100 Minutes.</span></li>'+      
           '<li><span class="dot">4</span><span>If your test is interrupted midway, you can come back &mdash; but make sure you choose the <b>"Resume Test"</b> button.</span></li>'+
           '<li><span class="dot">5</span><span>The PDF download at the end is for your own reference only. It is <b>not</b> a qualification or any sort of certification.</span></li>'+
         '</ul>'+
@@ -304,7 +310,7 @@
       closeModal();
       if(!allowedToStart()) return;
       showLoader("Preparing your paper…");
-      var params=(APP.mode==="CUSTOM")?{mode:"CUSTOM",topics:APP.topics,count:APP.length}:{mode:"EXAM",sheetName:APP.exam,count:APP.length};
+      var params=(APP.mode==="CUSTOM")?{mode:"CUSTOM",topics:APP.topics,count:APP.length,name:APP.candidateName,subject:APP.subjectLabel}:{mode:"EXAM",sheetName:APP.exam,count:APP.length,name:APP.candidateName,subject:APP.subjectLabel};
       api("startExam",params).then(function(data){
         if(!data||data.error){ notify(data&&data.message?data.message:"Could not start the test.","error"); return; }
         if(!data.questions||!data.questions.length){ notify("No questions available for this selection yet.","error"); return; }
@@ -354,6 +360,7 @@
       var sel=[]; document.querySelectorAll(".customTopic").forEach(function(c){ if(c.checked) sel.push(c.value); });
       if(!sel.length){ notify("Select at least one exam or topic.","error"); return; }
       APP.topics=sel; APP.mode="CUSTOM"; APP.length=Number($("customLength").value);
+      APP.subjectLabel="Custom: "+sel.map(labelForSheet).join(", ");
       closeModal(); setTimeout(gateway,250);
     }
 
@@ -395,13 +402,14 @@
     function showQuestion(){
       var q=APP.questions[APP.qIndex];
       var img=q.imageUrl?'<img src="'+esc(q.imageUrl)+'" class="question-image" onerror="this.style.display=\'none\'">':'';
+      var srcTag=q.source?'<div class="source-tag">Asked in '+esc(q.source)+'</div>':'';
       var opts="";
       q.scrambled.forEach(function(o){
         var sel=APP.answers[APP.qIndex]===o.l;
         opts+='<div class="option'+(sel?' selected':'')+'" onclick="JMT.answer(\''+o.l+'\')"><span class="mark">'+(sel?'✓':'')+'</span><span>'+esc(o.t)+'</span></div>';
       });
       var last=APP.qIndex===APP.questions.length-1;
-      $("qContainer").innerHTML='<div class="question-card"><div class="q-count">Question '+(APP.qIndex+1)+' of '+APP.questions.length+'</div>'+
+      $("qContainer").innerHTML='<div class="question-card">'+srcTag+'<div class="q-count">Question '+(APP.qIndex+1)+' of '+APP.questions.length+'</div>'+
         '<div class="question-text">'+esc(q.question)+'</div>'+img+opts+
         '<div class="quiz-nav"><button class="btn btn-secondary" onclick="JMT.prev()" '+(APP.qIndex===0?'disabled':'')+'>Previous</button>'+
         (last?'':'<button class="btn btn-primary" onclick="JMT.next()">Next</button>')+
