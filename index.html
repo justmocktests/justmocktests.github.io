@@ -82,6 +82,7 @@
     label.lbl{font-weight:700;font-size:14px;display:block;margin-bottom:6px}
 
     .modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;justify-content:center;align-items:center;z-index:9999;padding:16px}
+    #modalRoot2{z-index:10001}
     .modal-backdrop.active{display:flex}
     .modal-window{width:100%;max-width:760px;background:#fff;border-radius:18px;overflow:hidden;animation:slideUp .25s ease;box-shadow:0 24px 60px rgba(0,0,0,.3)}
     @keyframes slideUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
@@ -220,6 +221,7 @@
     <div id="countdownNum">5</div>
   </div>
   <div id="modalRoot"></div>
+  <div id="modalRoot2"></div>
   <div id="app"></div>
 
   <script>
@@ -237,6 +239,12 @@
 
     // Quotes rotation
     var quotes=[], quoteTimer=null, quoteWordTimer=null;
+    var FALLBACK_QUOTES=[
+      {q:"Success is the sum of small efforts repeated day in and day out.", by:"Robert Collier"},
+      {q:"The expert in anything was once a beginner.", by:"Helen Hayes"},
+      {q:"It always seems impossible until it is done.", by:"Nelson Mandela"},
+      {q:"Hard work beats talent when talent does not work hard.", by:"Tim Notke"}
+    ];
 
     var APP = {
       portalData:null, config:{}, sessionId:null, candidateName:"",
@@ -283,7 +291,7 @@
       api("getPortalData").then(function(data){
         if(!data||data.error){ notify("Could not load the site. Please refresh.","error"); return; }
         APP.portalData=data; APP.config=data.config||{};
-        quotes=data.quotes||[];
+        quotes=(data.quotes&&data.quotes.length)?data.quotes:FALLBACK_QUOTES;
         renderHome(); attemptResume();
       });
     }
@@ -413,16 +421,26 @@
     function openTerms(){
       var sheet=findPolicySheet("terms");
       if(!sheet){ notify("Terms page not found.","error"); return; }
-      policy(sheet);
+      api("getPolicy",{sheetName:sheet}).then(function(d){
+        var body=(d&&d.policy)?'<pre style="white-space:pre-wrap;word-wrap:break-word;font-family:inherit;font-size:14px;color:var(--ink-soft)">'+esc(d.policy)+'</pre>':'<p>Could not load the Terms and Conditions.</p>';
+        openModal2("Terms and Conditions", body);
+      });
     }
+    function openModal2(title,content){
+      $("modalRoot2").innerHTML='<div class="modal-window"><div class="modal-header"><h3>'+title+'</h3><button onclick="JMT.closeModal2()">&times;</button></div><div class="modal-content">'+content+'</div></div>';
+      $("modalRoot2").classList.add("modal-backdrop","active");
+    }
+    function closeModal2(){ var b=$("modalRoot2"); b.classList.remove("active"); b.innerHTML=""; }
 
     function pay(){
       var name=($("candidateName").value||"").trim(), ok=$("termsCheck").checked;
       if(!name){ notify("Please enter your name.","error"); return; }
       if(!ok){ notify("Please agree to the Terms and Conditions.","error"); return; }
       APP.candidateName=name; closeModal();
-      var sandbox=String(APP.config.SANDBOX_MODE)==="true";
-      if(sandbox) setTimeout(showRules,250); else setTimeout(gatewayPay,250);
+      // Show the payment shell (QR / UPI) in all modes so the flow is visible.
+      // In sandbox, the "Simulate Payment Success" button bridges to the test.
+      // When live keys arrive, real Razorpay confirmation replaces the simulate step.
+      setTimeout(gatewayPay,250);
     }
 
     /* ============ PAYMENT SHELL ============ */
@@ -457,9 +475,33 @@
     function showQR(){
       var cover=$("qrCover"), box=$("qrBox");
       if(cover) cover.style.display="none";
-      // In sandbox there is no real QR yet; show placeholder unblurred.
-      if(box) box.innerHTML='<div class="qr-placeholder">Razorpay QR will render here once live keys are added.</div>';
+      // Sandbox: show a visible QR-style placeholder so the flow is concrete.
+      // Live: this is replaced by the real Razorpay QR image.
+      if(box) box.innerHTML=sampleQrSvg();
       startPayCountdown(120);
+    }
+
+    function sampleQrSvg(){
+      // A deterministic QR-looking grid (placeholder only, not a real payable code).
+      var n=21, cell=200/n, rects="";
+      // finder squares
+      function finder(ox,oy){
+        return '<rect x="'+(ox*cell)+'" y="'+(oy*cell)+'" width="'+(7*cell)+'" height="'+(7*cell)+'" fill="#111"/>'+
+               '<rect x="'+((ox+1)*cell)+'" y="'+((oy+1)*cell)+'" width="'+(5*cell)+'" height="'+(5*cell)+'" fill="#fff"/>'+
+               '<rect x="'+((ox+2)*cell)+'" y="'+((oy+2)*cell)+'" width="'+(3*cell)+'" height="'+(3*cell)+'" fill="#111"/>';
+      }
+      var seed=987654321;
+      for(var yy=0; yy<n; yy++){
+        for(var xx=0; xx<n; xx++){
+          var inFinder=((xx<8&&yy<8)||(xx>n-9&&yy<8)||(xx<8&&yy>n-9));
+          if(inFinder) continue;
+          seed=(seed*1103515245+12345)&0x7fffffff;
+          if((seed>>7)%2===0) rects+='<rect x="'+(xx*cell)+'" y="'+(yy*cell)+'" width="'+cell+'" height="'+cell+'" fill="#111"/>';
+        }
+      }
+      return '<svg viewBox="0 0 200 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">'+
+             '<rect width="200" height="200" fill="#fff"/>'+rects+finder(0,0)+finder(n-7,0)+finder(0,n-7)+
+             '</svg>';
     }
 
     function startPayCountdown(sec){
@@ -700,9 +742,8 @@
       var notAns=r.review.filter(function(x){return x.selected==="Not Answered";}).length;
 
       var h='<div class="container"><div class="score-wrapper"><div class="pdf-area" style="border-top:8px solid '+th.bg+'">'+
-        '<div class="score-head" style="background:'+th.grad+';color:'+th.fg+';border-radius:12px;padding:20px;border-bottom:none">'+
-          '<h1 style="color:'+th.fg+'">'+th.name+' Scorecard</h1>'+
-          '<div class="sub" style="color:'+th.fg+';opacity:.9">'+esc(APP.config.SITE_NAME||"Just Mock Tests")+'</div></div>'+
+        '<div class="score-head" style="background:'+th.grad+';color:'+th.fg+';border-radius:12px;padding:26px 20px;border-bottom:none">'+
+          '<h1 style="color:'+th.fg+';font-size:40px;letter-spacing:-.5px">Just Mock Tests Score</h1></div>'+
         '<div class="score-meta">'+
           '<div><b>Candidate:</b> '+esc(APP.candidateName||"-")+'</div>'+
           '<div><b>Test Date:</b> '+esc(fmtClock(APP.startClock).split(",")[0]||new Date().toLocaleDateString())+'</div>'+
@@ -764,7 +805,7 @@
       doc.setFont("helvetica","bold"); doc.setFontSize(20);
       doc.text((APP.config.SITE_NAME||"Just Mock Tests"), margin, 32);
       doc.setFont("helvetica","normal"); doc.setFontSize(11);
-      doc.text(th.name+" Scorecard", margin, 52);
+      doc.text("Score", margin, 52);
       y=90;
 
       // meta block
@@ -916,7 +957,7 @@
     function startFresh(){ clearSession(); APP.questions=[]; APP.examToken=null; }
     function home(){ location.reload(); }
 
-    window.JMT={ pick:pick, len:len, pay:pay, simulatePay:simulatePay, showQR:showQR, payUPI:payUPI, openTerms:openTerms,
+    window.JMT={ pick:pick, len:len, pay:pay, simulatePay:simulatePay, showQR:showQR, payUPI:payUPI, openTerms:openTerms, closeModal2:closeModal2,
       showRules:showRules, acceptRules:acceptRules,
       customBuilder:customBuilder, customGo:customGo, answer:answer, next:next, prev:prev, jump:jump,
       confirmSubmit:confirmSubmit, finalSubmit:finalSubmit, pdf:pdf, policy:policy, closeModal:closeModal,
