@@ -21,86 +21,102 @@
 
     /* ===== NOTICE BOARD HERO ===== */
     .board{
-      background:
-        linear-gradient(rgba(40,26,14,.30),rgba(40,26,14,.45)),
-        repeating-linear-gradient(30deg,#6b4423 0 22px,#5c3a1e 22px 44px),
-        #5c3a1e;
-      background-blend-mode:multiply;
-      padding:34px 18px 30px;position:relative;overflow:hidden;
-      box-shadow:inset 0 0 120px rgba(0,0,0,.55);
+      background-color:#7c4a2d;
+      background-image:
+        linear-gradient(rgba(30,18,10,.34),rgba(30,18,10,.5)),
+        linear-gradient(335deg,#8a5836 0,#8a5836 100%),
+        /* mortar lines */
+        linear-gradient(#3d2817 2px, transparent 2px),
+        linear-gradient(90deg,#3d2817 2px, transparent 2px);
+      background-size:auto, auto, 100% 34px, 68px 34px;
+      background-position:0 0, 0 0, 0 0, 0 0;
+      padding:22px 16px 20px;position:relative;overflow:hidden;
+      box-shadow:inset 0 0 90px rgba(0,0,0,.6);
     }
-    .board-inner{position:relative;max-width:1180px;margin:0 auto;min-height:430px;display:flex;align-items:center;justify-content:center}
+    /* offset brick rows */
+    .board:before{content:"";position:absolute;inset:0;pointer-events:none;
+      background-image:linear-gradient(90deg,#3d2817 2px,transparent 2px);
+      background-size:68px 34px;background-position:34px 34px;
+      -webkit-mask:repeating-linear-gradient(#000 0 34px,transparent 34px 68px);
+      mask:repeating-linear-gradient(#000 0 34px,transparent 34px 68px);opacity:.85}
+    .board-inner{position:relative;max-width:1120px;margin:0 auto;height:350px;z-index:2}
 
     /* center hero paper */
-    .hero-paper{position:relative;z-index:4;width:min(560px,86vw);
+    .hero-paper{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-1deg);z-index:4;width:min(430px,60vw);
       background:linear-gradient(135deg,#f3e6c8,#efe0be 55%,#e7d3a6);
-      padding:44px 40px 40px;text-align:center;
-      box-shadow:0 18px 40px rgba(0,0,0,.45),0 3px 0 rgba(0,0,0,.15);
-      transform:rotate(-1deg);
-      clip-path:polygon(2% 3%,15% 0,33% 2%,50% 0,68% 2%,85% 0,98% 3%,100% 18%,99% 40%,100% 60%,99% 82%,98% 97%,82% 100%,60% 98%,40% 100%,20% 99%,3% 97%,1% 80%,2% 60%,0 40%,1% 20%);
+      padding:26px 30px 24px;text-align:center;
+      box-shadow:0 14px 30px rgba(0,0,0,.5),0 2px 0 rgba(0,0,0,.15);
+      clip-path:polygon(2% 4%,15% 0,33% 2%,50% 0,68% 2%,85% 0,98% 4%,100% 20%,99% 42%,100% 62%,99% 84%,98% 97%,82% 100%,60% 98%,40% 100%,20% 99%,3% 97%,1% 80%,2% 60%,0 40%,1% 20%);
     }
     .hero-paper:before{content:"";position:absolute;inset:0;
       background:radial-gradient(circle at 30% 20%,rgba(120,80,30,.10),transparent 40%),radial-gradient(circle at 80% 90%,rgba(120,80,30,.12),transparent 45%);pointer-events:none}
-    .hero-title{font-family:"Arial Black","Segoe UI",sans-serif;font-weight:900;font-size:60px;line-height:.94;letter-spacing:-1px;margin:0;text-shadow:1px 1px 0 rgba(0,0,0,.12);display:flex;flex-direction:column;align-items:center}
-    .hero-title .t-black{color:#20140a;font-size:68px}
-    .hero-title .t-red{color:#8a2018;font-size:52px}
-    .hero-stars{color:#7a1f16;font-size:20px;letter-spacing:8px;margin:10px 0 6px}
-    .hero-tag{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:20px;color:#3a2a18}
+    .hero-title{font-family:"Arial Black","Segoe UI",sans-serif;font-weight:900;line-height:.94;letter-spacing:-1px;margin:0;text-shadow:1px 1px 0 rgba(0,0,0,.12);display:flex;flex-direction:column;align-items:center}
+    .hero-title .t-black{color:#20140a;font-size:46px}
+    .hero-title .t-red{color:#8a2018;font-size:38px}
+    .hero-stars{color:#7a1f16;font-size:15px;letter-spacing:6px;margin:7px 0 4px}
+    .hero-tag{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:15px;color:#3a2a18;line-height:1.35}
 
-    /* push pin */
-    .pin{position:absolute;width:20px;height:20px;border-radius:50%;
-      background:radial-gradient(circle at 35% 30%,#ff6b6b,#c0392b 60%,#7a1f16);
-      box-shadow:0 3px 5px rgba(0,0,0,.5),inset -2px -2px 3px rgba(0,0,0,.3);z-index:6}
-    .pin-center{top:-6px;left:50%;transform:translateX(-50%)}
+    /* nail head (instead of pins) */
+    .pin{position:absolute;width:15px;height:15px;border-radius:50%;
+      background:radial-gradient(circle at 35% 30%,#e7e2d8,#8d8577 55%,#4a453c);
+      box-shadow:0 2px 4px rgba(0,0,0,.6),inset -1px -1px 2px rgba(0,0,0,.4);z-index:6}
+    .pin-center{top:-5px;left:50%;transform:translateX(-50%);
+      background:radial-gradient(circle at 35% 30%,#ff6b6b,#c0392b 60%,#7a1f16)}
 
     /* sticky notes */
-    .note{position:absolute;z-index:3;width:150px;min-height:150px;padding:16px 12px 14px;
-      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;
-      box-shadow:0 10px 22px rgba(0,0,0,.4);transition:transform .18s ease, box-shadow .18s ease;cursor:default}
-    .note:hover{transform:scale(1.05) rotate(0deg)!important;box-shadow:0 16px 30px rgba(0,0,0,.5);z-index:7}
-    .note-ic{width:46px;height:46px}
+    .note{position:absolute;z-index:3;width:126px;min-height:104px;padding:10px 9px;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;text-align:center;
+      box-shadow:0 8px 18px rgba(0,0,0,.42);transition:transform .18s ease, box-shadow .18s ease;cursor:default}
+    .note:hover{transform:scale(1.06) rotate(0deg)!important;box-shadow:0 14px 26px rgba(0,0,0,.5);z-index:8}
+    .note-ic{width:38px;height:38px}
     .note-ic svg{width:100%;height:100%}
-    .note-txt{font-family:"Segoe UI",sans-serif;font-weight:800;font-size:15px;line-height:1.25;color:#1a1a1a;text-transform:uppercase;letter-spacing:.3px}
-    .note-txt:after{content:"";display:block;width:40px;height:3px;background:#c0392b;margin:8px auto 0;border-radius:2px}
+    .note-txt{font-family:"Segoe UI",sans-serif;font-weight:800;font-size:12.5px;line-height:1.22;color:#1a1a1a;text-transform:uppercase;letter-spacing:.2px}
+    .note-txt:after{content:"";display:block;width:34px;height:3px;background:#c0392b;margin:6px auto 0;border-radius:2px}
     .note-yellow{background:#f6d94a}
     .note-pink{background:#f3a9c0}
     .note-blue{background:#a9cbe6}
     .note-green{background:#bcd97a}
     .note-cream{background:#eadfc4}
     .note-orange{background:#f2b263}
-    .note-dark{background:#111;box-shadow:0 10px 22px rgba(0,0,0,.55)}
-    .note-dark .bm{color:#f39c12;text-transform:none;font-size:17px;letter-spacing:.3px}
+    .note-purple{background:#c9b3e6}
+    .note-dark{background:#111;box-shadow:0 8px 18px rgba(0,0,0,.55);width:120px;min-height:56px}
+    .note-dark .bm{color:#f39c12;text-transform:none;font-size:14px;letter-spacing:.2px}
     .note-dark .bm:after{background:#f39c12}
 
-    /* positions around the center paper */
-    .n-tl{top:8px;left:2%;transform:rotate(-6deg)}
-    .n-tr{top:8px;right:2%;transform:rotate(5deg)}
-    .n-bl{bottom:6px;left:4%;transform:rotate(4deg)}
-    .n-br{bottom:6px;right:4%;transform:rotate(-5deg)}
-    .n-ml{top:44%;left:-1%;transform:rotate(3deg)}
-    .n-mr{top:44%;right:-1%;transform:rotate(-4deg)}
-    .n-book{top:-6px;right:16%;width:120px;min-height:70px;transform:rotate(3deg)}
-    .n-book .pin{top:-6px;left:50%;transform:translateX(-50%)}
+    /* positions around the center paper (no overlaps) */
+    .n-tl{top:2px;left:3%;transform:rotate(-5deg)}
+    .n-tr{top:2px;right:3%;transform:rotate(4deg)}
+    .n-bl{bottom:2px;left:3%;transform:rotate(4deg)}
+    .n-br{bottom:2px;right:3%;transform:rotate(-4deg)}
+    .n-ml{top:50%;left:0.5%;margin-top:-52px;transform:rotate(3deg)}
+    .n-mr{top:50%;right:0.5%;margin-top:-52px;transform:rotate(-3deg)}
+    .n-book{top:calc(50% + 100px);left:50%;transform:translateX(-50%) rotate(-2deg);z-index:5}
+    .n-book .pin{top:-5px;left:50%;transform:translateX(-50%)}
 
-    /* masking tape */
-    .tape{position:absolute;width:56px;height:20px;background:rgba(220,210,180,.55);top:-9px;left:50%;transform:translateX(-50%) rotate(-4deg);box-shadow:0 1px 2px rgba(0,0,0,.2)}
-    .tape-b,.tape-d{transform:translateX(-50%) rotate(5deg)}
-    .tape-e{left:20%}
-    .tape-f{left:80%}
+    /* nail head on each note */
+    .note>.nail{position:absolute;top:-6px;left:50%;transform:translateX(-50%);
+      width:13px;height:13px;border-radius:50%;
+      background:radial-gradient(circle at 35% 30%,#e7e2d8,#8d8577 55%,#4a453c);
+      box-shadow:0 2px 4px rgba(0,0,0,.6),inset -1px -1px 2px rgba(0,0,0,.4);z-index:7}
 
-    .board-strip{max-width:900px;margin:26px auto 0;text-align:center;position:relative;z-index:4}
-    .strip-note{background:#efe3c6;display:inline-block;padding:12px 26px;transform:rotate(-.6deg);
-      box-shadow:0 8px 18px rgba(0,0,0,.35);font-family:Georgia,serif;font-style:italic;font-size:16px;color:#3a2a18;max-width:90%}
-    .board-disclaimer{margin-top:14px;font-size:12.5px;color:#e8dcc0;opacity:.85}
+    .board-resume{position:relative;z-index:4;display:flex;justify-content:center;margin-top:6px}
+    .n-resume{position:static;transform:rotate(-2deg);width:180px;min-height:70px;flex-direction:row;gap:10px}
+    .n-resume .note-ic{width:34px;height:34px;flex:none}
+    .n-resume .note-txt{font-size:12px;text-transform:none}
+    .n-resume .note-txt:after{display:none}
+
+    .board-strip{max-width:840px;margin:14px auto 0;text-align:center;position:relative;z-index:4}
+    .strip-note{background:#efe3c6;display:inline-block;padding:10px 24px;transform:rotate(-.5deg);
+      box-shadow:0 7px 16px rgba(0,0,0,.35);font-family:Georgia,serif;font-style:italic;font-size:15px;color:#3a2a18;max-width:92%}
+    .board-disclaimer{margin-top:12px;font-size:12px;color:#e8dcc0;opacity:.85}
 
     @media (max-width:900px){
-      .note{position:static;transform:none!important;width:44%;min-height:120px;margin:6px}
+      .board-inner{height:auto;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding-top:6px}
+      .note{position:static;transform:none!important;width:44%;min-height:110px;margin:4px}
       .note:hover{transform:scale(1.03)!important}
-      .n-book{width:44%}
-      .tape{display:none}
-      .board-inner{flex-wrap:wrap;gap:6px;min-height:0}
-      .hero-paper{order:-1;flex-basis:100%;width:92%;margin:0 auto 8px;transform:rotate(0)}
-      .hero-title{font-size:44px}
+      .n-book{width:60%}
+      .hero-paper{position:static;transform:none;order:-1;flex-basis:100%;width:92%;margin:0 auto 6px}
+      .hero-title .t-black{font-size:40px}.hero-title .t-red{font-size:32px}
     }
 
     /* QUOTE strip (replaces sandbox banner spot) */
@@ -311,6 +327,7 @@
     var ICON_TAG='<svg viewBox="0 0 64 64" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12h20l20 20-20 20-20-20z"/><circle cx="24" cy="24" r="4" fill="#1a1a1a"/><path d="M30 30l10 10" stroke-width="2.4"/></svg>';
     var ICON_LIST='<svg viewBox="0 0 64 64" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="10" width="36" height="44" rx="3"/><path d="M22 22l4 4 6-8M22 38l4 4 6-8" stroke="#c0392b"/><line x1="36" y1="20" x2="44" y2="20"/><line x1="36" y1="36" x2="44" y2="36"/></svg>';
     var ICON_BOLT='<svg viewBox="0 0 64 64" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M36 8L18 36h12l-4 20 22-30H34z" fill="#f4d03f"/></svg>';
+    var ICON_RESUME='<svg viewBox="0 0 64 64" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M52 32a20 20 0 11-6-14"/><path d="M46 10v10H36"/><path d="M32 22v11l8 5" stroke="#c0392b"/></svg>';
 
 
     // Theme colours that cycle every 5 seconds: red, sky blue, yellow
@@ -382,32 +399,29 @@
       var html='<div class="board">'+
         '<div class="board-inner">'+
           // top-left: No Account
-          '<div class="note note-yellow n-tl">'+
+          '<div class="note note-yellow n-tl"><span class="nail"></span>'+
             '<div class="note-ic">'+ICON_NOACC+'</div>'+
-            '<div class="note-txt">No Account<br>No Login<br>No Trouble</div><span class="tape tape-a"></span></div>'+
+            '<div class="note-txt">No Account<br>No Login<br>No Trouble</div></div>'+
           // top-right: All Competitive Exams
-          '<div class="note note-pink n-tr">'+
+          '<div class="note note-pink n-tr"><span class="nail"></span>'+
             '<div class="note-ic">'+ICON_TROPHY+'</div>'+
-            '<div class="note-txt">All Competitive<br>Exams Covered</div><span class="tape tape-b"></span></div>'+
-          // bottom-left: Past Papers
-          '<div class="note note-blue n-bl">'+
+            '<div class="note-txt">All Competitive<br>Exams Covered</div></div>'+
+          // mid-left: Past Papers
+          '<div class="note note-blue n-ml"><span class="nail"></span>'+
             '<div class="note-ic">'+ICON_BOOK+'</div>'+
-            '<div class="note-txt">Questions from<br>Past Papers</div><span class="tape tape-c"></span></div>'+
-          // bottom-right: Affordable
-          '<div class="note note-green n-br">'+
-            '<div class="note-ic">'+ICON_TAG+'</div>'+
-            '<div class="note-txt">All at Very<br>Affordable Price</div><span class="tape tape-d"></span></div>'+
-          // mid-left: Detailed Scorecards
-          '<div class="note note-cream n-ml">'+
-            '<div class="note-ic">'+ICON_LIST+'</div>'+
-            '<div class="note-txt">Detailed<br>Scorecards</div><span class="tape tape-e"></span></div>'+
+            '<div class="note-txt">Questions from<br>Past Papers</div></div>'+
           // mid-right: Instant Results
-          '<div class="note note-orange n-mr">'+
+          '<div class="note note-orange n-mr"><span class="nail"></span>'+
             '<div class="note-ic">'+ICON_BOLT+'</div>'+
-            '<div class="note-txt">Instant<br>Results</div><span class="tape tape-f"></span></div>'+
-          // Bookmark pamphlet (kept, as a note)
-          '<div class="note note-dark n-book" onclick="void 0">'+
-            '<div class="note-txt bm">Book Mark<br>this</div><span class="pin"></span></div>'+
+            '<div class="note-txt">Instant<br>Results</div></div>'+
+          // bottom-left: Detailed Scorecards
+          '<div class="note note-cream n-bl"><span class="nail"></span>'+
+            '<div class="note-ic">'+ICON_LIST+'</div>'+
+            '<div class="note-txt">Detailed<br>Scorecards</div></div>'+
+          // bottom-right: Affordable
+          '<div class="note note-green n-br"><span class="nail"></span>'+
+            '<div class="note-ic">'+ICON_TAG+'</div>'+
+            '<div class="note-txt">All at Very<br>Affordable Price</div></div>'+
           // CENTER hero paper
           '<div class="hero-paper">'+
             '<span class="pin pin-center"></span>'+
@@ -415,6 +429,15 @@
             '<div class="hero-stars">&#9733; &#9733; &#9733;</div>'+
             '<div class="hero-tag">Practice More. Score Higher.<br>Succeed.</div>'+
           '</div>'+
+          // Bookmark pamphlet BELOW the stars
+          '<div class="note note-dark n-book"><span class="pin"></span>'+
+            '<div class="note-txt bm">Book Mark this</div></div>'+
+        '</div>'+
+        // Resume pamphlet on its own line strip
+        '<div class="board-resume">'+
+          '<div class="note note-purple n-resume"><span class="nail"></span>'+
+            '<div class="note-ic">'+ICON_RESUME+'</div>'+
+            '<div class="note-txt">Resume test from<br>where you left,<br>if you drop off</div></div>'+
         '</div>'+
         '<div class="board-strip">'+
           '<div class="strip-note"><span>'+esc(tag)+'</span></div>'+
