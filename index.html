@@ -19,33 +19,89 @@
     body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;line-height:1.55}
     .container{max-width:1200px;margin:auto;padding:24px}
 
-    /* HERO with colour-cycling theme, glow from BOTH sides */
-    .hero{position:relative;background:
-        radial-gradient(circle at 0% 50%, var(--theme) 0%, transparent 38%),
-        radial-gradient(circle at 100% 50%, var(--theme) 0%, transparent 38%),
-        linear-gradient(135deg,#0f172a 0%,#1e293b 60%,#1e293b 100%);
-      color:#fff;text-align:center;padding:60px 24px 52px;transition:background 1.2s ease;overflow:hidden}
+    /* ===== NOTICE BOARD HERO ===== */
+    .board{
+      background:
+        linear-gradient(rgba(40,26,14,.30),rgba(40,26,14,.45)),
+        repeating-linear-gradient(30deg,#6b4423 0 22px,#5c3a1e 22px 44px),
+        #5c3a1e;
+      background-blend-mode:multiply;
+      padding:34px 18px 30px;position:relative;overflow:hidden;
+      box-shadow:inset 0 0 120px rgba(0,0,0,.55);
+    }
+    .board-inner{position:relative;max-width:1180px;margin:0 auto;min-height:430px;display:flex;align-items:center;justify-content:center}
 
-    /* SIGNBOARD with blinking bulbs */
-    .signboard{display:inline-block;position:relative;padding:22px 46px;margin-bottom:16px;border-radius:14px;
-      background:rgba(0,0,0,.28);border:3px solid var(--theme);box-shadow:0 0 24px rgba(0,0,0,.35);transition:border-color 1.2s ease}
-    .signboard h1{font-size:46px;font-weight:800;letter-spacing:-.5px;color:#fff;text-shadow:0 0 14px var(--theme),0 2px 4px rgba(0,0,0,.4);transition:text-shadow 1.2s ease}
-    .bulbs{position:absolute;display:flex;gap:14px;left:0;right:0;justify-content:center}
-    .bulbs.top{top:-9px}
-    .bulbs.bottom{bottom:-9px}
-    .bulb{width:12px;height:12px;border-radius:50%;background:#fde68a;box-shadow:0 0 8px 2px #fde68a;animation:blink 1s infinite}
-    .bulb:nth-child(odd){animation-delay:.5s}
-    .bulb:nth-child(3n){animation-delay:.25s}
-    @keyframes blink{0%,100%{opacity:1;box-shadow:0 0 10px 3px #fde68a}50%{opacity:.25;box-shadow:0 0 3px 1px #fde68a}}
+    /* center hero paper */
+    .hero-paper{position:relative;z-index:4;width:min(560px,86vw);
+      background:linear-gradient(135deg,#f3e6c8,#efe0be 55%,#e7d3a6);
+      padding:44px 40px 40px;text-align:center;
+      box-shadow:0 18px 40px rgba(0,0,0,.45),0 3px 0 rgba(0,0,0,.15);
+      transform:rotate(-1deg);
+      clip-path:polygon(2% 3%,15% 0,33% 2%,50% 0,68% 2%,85% 0,98% 3%,100% 18%,99% 40%,100% 60%,99% 82%,98% 97%,82% 100%,60% 98%,40% 100%,20% 99%,3% 97%,1% 80%,2% 60%,0 40%,1% 20%);
+    }
+    .hero-paper:before{content:"";position:absolute;inset:0;
+      background:radial-gradient(circle at 30% 20%,rgba(120,80,30,.10),transparent 40%),radial-gradient(circle at 80% 90%,rgba(120,80,30,.12),transparent 45%);pointer-events:none}
+    .hero-title{font-family:"Arial Black","Segoe UI",sans-serif;font-weight:900;font-size:60px;line-height:.94;letter-spacing:-1px;margin:0;text-shadow:1px 1px 0 rgba(0,0,0,.12);display:flex;flex-direction:column;align-items:center}
+    .hero-title .t-black{color:#20140a;font-size:68px}
+    .hero-title .t-red{color:#8a2018;font-size:52px}
+    .hero-stars{color:#7a1f16;font-size:20px;letter-spacing:8px;margin:10px 0 6px}
+    .hero-tag{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:20px;color:#3a2a18}
 
-    .hero p{font-size:18px;opacity:.95;max-width:720px;margin:0 auto}
-    .hero .disclaimer{margin-top:16px;font-size:13px;color:#e2e8f0}
+    /* push pin */
+    .pin{position:absolute;width:20px;height:20px;border-radius:50%;
+      background:radial-gradient(circle at 35% 30%,#ff6b6b,#c0392b 60%,#7a1f16);
+      box-shadow:0 3px 5px rgba(0,0,0,.5),inset -2px -2px 3px rgba(0,0,0,.3);z-index:6}
+    .pin-center{top:-6px;left:50%;transform:translateX(-50%)}
 
-    /* BOOKMARK board top-right (desktop only) */
-    .bookmark-nudge{position:absolute;top:22px;right:120px;z-index:5}
-    .bookmark-board{background:#000;border:3px solid #8b5e34;border-radius:10px;padding:8px 16px;font-weight:800;font-size:15px;letter-spacing:.3px;animation:bmColor 4s linear infinite;box-shadow:0 4px 14px rgba(0,0,0,.4);white-space:nowrap}
-    @keyframes bmColor{0%{color:#facc15}25%{color:#ef4444}50%{color:#ffffff}75%{color:#38bdf8}100%{color:#facc15}}
-    @media (max-width:768px){ .bookmark-nudge{display:none} }
+    /* sticky notes */
+    .note{position:absolute;z-index:3;width:150px;min-height:150px;padding:16px 12px 14px;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;
+      box-shadow:0 10px 22px rgba(0,0,0,.4);transition:transform .18s ease, box-shadow .18s ease;cursor:default}
+    .note:hover{transform:scale(1.05) rotate(0deg)!important;box-shadow:0 16px 30px rgba(0,0,0,.5);z-index:7}
+    .note-ic{width:46px;height:46px}
+    .note-ic svg{width:100%;height:100%}
+    .note-txt{font-family:"Segoe UI",sans-serif;font-weight:800;font-size:15px;line-height:1.25;color:#1a1a1a;text-transform:uppercase;letter-spacing:.3px}
+    .note-txt:after{content:"";display:block;width:40px;height:3px;background:#c0392b;margin:8px auto 0;border-radius:2px}
+    .note-yellow{background:#f6d94a}
+    .note-pink{background:#f3a9c0}
+    .note-blue{background:#a9cbe6}
+    .note-green{background:#bcd97a}
+    .note-cream{background:#eadfc4}
+    .note-orange{background:#f2b263}
+    .note-dark{background:#111;box-shadow:0 10px 22px rgba(0,0,0,.55)}
+    .note-dark .bm{color:#f39c12;text-transform:none;font-size:17px;letter-spacing:.3px}
+    .note-dark .bm:after{background:#f39c12}
+
+    /* positions around the center paper */
+    .n-tl{top:8px;left:2%;transform:rotate(-6deg)}
+    .n-tr{top:8px;right:2%;transform:rotate(5deg)}
+    .n-bl{bottom:6px;left:4%;transform:rotate(4deg)}
+    .n-br{bottom:6px;right:4%;transform:rotate(-5deg)}
+    .n-ml{top:44%;left:-1%;transform:rotate(3deg)}
+    .n-mr{top:44%;right:-1%;transform:rotate(-4deg)}
+    .n-book{top:-6px;right:16%;width:120px;min-height:70px;transform:rotate(3deg)}
+    .n-book .pin{top:-6px;left:50%;transform:translateX(-50%)}
+
+    /* masking tape */
+    .tape{position:absolute;width:56px;height:20px;background:rgba(220,210,180,.55);top:-9px;left:50%;transform:translateX(-50%) rotate(-4deg);box-shadow:0 1px 2px rgba(0,0,0,.2)}
+    .tape-b,.tape-d{transform:translateX(-50%) rotate(5deg)}
+    .tape-e{left:20%}
+    .tape-f{left:80%}
+
+    .board-strip{max-width:900px;margin:26px auto 0;text-align:center;position:relative;z-index:4}
+    .strip-note{background:#efe3c6;display:inline-block;padding:12px 26px;transform:rotate(-.6deg);
+      box-shadow:0 8px 18px rgba(0,0,0,.35);font-family:Georgia,serif;font-style:italic;font-size:16px;color:#3a2a18;max-width:90%}
+    .board-disclaimer{margin-top:14px;font-size:12.5px;color:#e8dcc0;opacity:.85}
+
+    @media (max-width:900px){
+      .note{position:static;transform:none!important;width:44%;min-height:120px;margin:6px}
+      .note:hover{transform:scale(1.03)!important}
+      .n-book{width:44%}
+      .tape{display:none}
+      .board-inner{flex-wrap:wrap;gap:6px;min-height:0}
+      .hero-paper{order:-1;flex-basis:100%;width:92%;margin:0 auto 8px;transform:rotate(0)}
+      .hero-title{font-size:44px}
+    }
 
     /* QUOTE strip (replaces sandbox banner spot) */
     .quote-strip{background:#fff;border:1px solid var(--line);border-left:5px solid var(--theme);padding:18px 22px;margin-bottom:24px;border-radius:12px;text-align:center;min-height:66px;display:flex;flex-direction:column;justify-content:center;transition:border-color 1.2s ease}
@@ -248,6 +304,15 @@
 
     var SESSION_KEY="JMT_SESSION", QUESTION_KEY="JMT_QUESTIONS", START_LOG="JMT_STARTS";
 
+    // Hand-drawn style icons (inline SVG) for the notice-board notes
+    var ICON_NOACC='<svg viewBox="0 0 64 64" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"><circle cx="32" cy="24" r="11"/><path d="M14 52c2-11 11-16 18-16s16 5 18 16"/><line x1="12" y1="12" x2="52" y2="52" stroke="#c0392b" stroke-width="4"/></svg>';
+    var ICON_TROPHY='<svg viewBox="0 0 64 64" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12h24v10a12 12 0 01-24 0z"/><path d="M20 16H12a6 6 0 006 10M44 16h8a6 6 0 01-6 10"/><path d="M32 34v8M24 50h16M28 42h8l2 8H26z"/></svg>';
+    var ICON_BOOK='<svg viewBox="0 0 64 64" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M32 16C26 12 16 12 10 14v34c6-2 16-2 22 2 6-4 16-4 22-2V14c-6-2-16-2-22 2z"/><line x1="32" y1="16" x2="32" y2="50"/></svg>';
+    var ICON_TAG='<svg viewBox="0 0 64 64" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12h20l20 20-20 20-20-20z"/><circle cx="24" cy="24" r="4" fill="#1a1a1a"/><path d="M30 30l10 10" stroke-width="2.4"/></svg>';
+    var ICON_LIST='<svg viewBox="0 0 64 64" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="10" width="36" height="44" rx="3"/><path d="M22 22l4 4 6-8M22 38l4 4 6-8" stroke="#c0392b"/><line x1="36" y1="20" x2="44" y2="20"/><line x1="36" y1="36" x2="44" y2="36"/></svg>';
+    var ICON_BOLT='<svg viewBox="0 0 64 64" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M36 8L18 36h12l-4 20 22-30H34z" fill="#f4d03f"/></svg>';
+
+
     // Theme colours that cycle every 5 seconds: red, sky blue, yellow
     var THEME_COLORS=["#e11d48","#0ea5e9","#eab308"];
     var themeIdx=0, themeTimer=null;
@@ -314,14 +379,48 @@
     function renderHome(){
       var c=APP.config, name=c.SITE_NAME||"Just Mock Tests";
       var tag=c.TAGLINE||"Real Mock Tests without any Trouble. No Account, No Login, No ads and No Spam.";
-      var bulbsTop="", bulbsBottom="";
-      for(var b=0;b<11;b++){ bulbsTop+='<span class="bulb"></span>'; bulbsBottom+='<span class="bulb"></span>'; }
-      var html='<div class="hero">'+
-        '<div class="bookmark-nudge"><div class="bookmark-board">Book Mark this</div></div>'+
-        '<div class="signboard"><div class="bulbs top">'+bulbsTop+'</div>'+
-        '<h1>'+esc(name)+'</h1><div class="bulbs bottom">'+bulbsBottom+'</div></div>'+
-        '<p>'+esc(tag)+'</p>'+
-        '<div class="disclaimer">Practice tests only. Not affiliated with any government or examination body.</div></div><div class="container">';
+      var html='<div class="board">'+
+        '<div class="board-inner">'+
+          // top-left: No Account
+          '<div class="note note-yellow n-tl">'+
+            '<div class="note-ic">'+ICON_NOACC+'</div>'+
+            '<div class="note-txt">No Account<br>No Login<br>No Trouble</div><span class="tape tape-a"></span></div>'+
+          // top-right: All Competitive Exams
+          '<div class="note note-pink n-tr">'+
+            '<div class="note-ic">'+ICON_TROPHY+'</div>'+
+            '<div class="note-txt">All Competitive<br>Exams Covered</div><span class="tape tape-b"></span></div>'+
+          // bottom-left: Past Papers
+          '<div class="note note-blue n-bl">'+
+            '<div class="note-ic">'+ICON_BOOK+'</div>'+
+            '<div class="note-txt">Questions from<br>Past Papers</div><span class="tape tape-c"></span></div>'+
+          // bottom-right: Affordable
+          '<div class="note note-green n-br">'+
+            '<div class="note-ic">'+ICON_TAG+'</div>'+
+            '<div class="note-txt">All at Very<br>Affordable Price</div><span class="tape tape-d"></span></div>'+
+          // mid-left: Detailed Scorecards
+          '<div class="note note-cream n-ml">'+
+            '<div class="note-ic">'+ICON_LIST+'</div>'+
+            '<div class="note-txt">Detailed<br>Scorecards</div><span class="tape tape-e"></span></div>'+
+          // mid-right: Instant Results
+          '<div class="note note-orange n-mr">'+
+            '<div class="note-ic">'+ICON_BOLT+'</div>'+
+            '<div class="note-txt">Instant<br>Results</div><span class="tape tape-f"></span></div>'+
+          // Bookmark pamphlet (kept, as a note)
+          '<div class="note note-dark n-book" onclick="void 0">'+
+            '<div class="note-txt bm">Book Mark<br>this</div><span class="pin"></span></div>'+
+          // CENTER hero paper
+          '<div class="hero-paper">'+
+            '<span class="pin pin-center"></span>'+
+            '<h1 class="hero-title"><span class="t-black">Just</span><span class="t-red">Mock Tests</span></h1>'+
+            '<div class="hero-stars">&#9733; &#9733; &#9733;</div>'+
+            '<div class="hero-tag">Practice More. Score Higher.<br>Succeed.</div>'+
+          '</div>'+
+        '</div>'+
+        '<div class="board-strip">'+
+          '<div class="strip-note"><span>'+esc(tag)+'</span></div>'+
+          '<div class="board-disclaimer">Practice tests only. Not affiliated with any government or examination body.</div>'+
+        '</div>'+
+      '</div><div class="container">';
       html+='<div class="quote-strip"><div id="quoteText" class="quote-text"></div><div id="quoteBy" class="quote-by"></div></div>';
       html+='<div class="custom-builder"><h2>Customise Your Test</h2>'+
         '<p>Mix questions from any combination of exams and topics into one custom paper.</p>'+
