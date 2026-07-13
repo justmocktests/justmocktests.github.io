@@ -352,25 +352,24 @@
     }
 
     /* ============ QUOTES ============ */
-    /* Ordering: first the even-indexed rows (row1,3,5...), then the odd-indexed
-       rows (row2,4,6...). Within each group, shorter quotes first, so variety
-       shows quickly. Each quote holds ~100 seconds then changes automatically,
-       even without a refresh. Word-by-word appear and disappear. */
+    /* Fresh randomised order on every page load, so each refresh starts on a
+       different quote and every quote gets shown across visits. Each quote holds
+       ~80 seconds, then disappears word by word from right to left, and the next
+       quote appears word by word. Runs continuously while on the home page. */
     function buildQuoteOrder(list){
-      var withIdx=list.map(function(item,i){ return {item:item,i:i,len:(item.q||"").length}; });
-      var evens=withIdx.filter(function(x){ return x.i%2===0; });
-      var odds =withIdx.filter(function(x){ return x.i%2===1; });
-      function byLen(a,b){ return a.len-b.len; }
-      evens.sort(byLen); odds.sort(byLen);
-      return evens.concat(odds).map(function(x){ return x.item; });
+      var arr=list.slice();
+      // Fisher-Yates shuffle so order differs every load
+      for(var i=arr.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=arr[i];arr[i]=arr[j];arr[j]=t; }
+      return arr;
     }
 
     function startQuotes(){
       if(quoteTimer) clearTimeout(quoteTimer);
       if(quoteWordTimer) clearInterval(quoteWordTimer);
       if(!quotes.length){ return; }
-      var order=buildQuoteOrder(quotes), idx=0;
-      var HOLD_MS=100000; // ~100 seconds per quote, then auto-change
+      var order=buildQuoteOrder(quotes);
+      var idx=Math.floor(Math.random()*order.length); // random starting quote each refresh
+      var HOLD_MS=80000; // ~80 seconds per quote, then auto-change
 
       function showOne(){
         var qEl=$("quoteText"), bEl=$("quoteBy");
@@ -389,11 +388,11 @@
             if(item.by) bEl.textContent="- "+item.by;
             quoteTimer=setTimeout(function(){ disappearThenNext(spans,bEl,showOne); }, HOLD_MS);
           }
-        },130);
+        },120);
       }
       function disappearThenNext(spans,bEl,cb){
         if(!$("quoteText")){ return; }
-        var wi=spans.length-1;
+        var wi=spans.length-1; // start from the LAST word => right-to-left
         bEl.textContent="";
         var di=setInterval(function(){
           if(!$("quoteText")){ clearInterval(di); return; }
