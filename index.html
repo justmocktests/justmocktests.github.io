@@ -46,7 +46,7 @@
     .board:after{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
       background:radial-gradient(circle at 20% 30%,rgba(255,180,120,.06),transparent 40%),radial-gradient(circle at 75% 70%,rgba(255,180,120,.05),transparent 45%)}
 
-    .board-inner{position:relative;max-width:1280px;margin:0 auto;height:396px;z-index:2}
+    .board-inner{position:relative;max-width:1300px;margin:0 auto;height:500px;z-index:2}
 
     /* STREET LIGHTS */
     .street-light{position:absolute;top:0;bottom:0;width:70px;z-index:1;pointer-events:none}
@@ -59,8 +59,8 @@
     .street-light .lamp{position:absolute;top:44px;width:34px;height:20px;border-radius:0 0 18px 18px;background:linear-gradient(#4a4a4a,#2b2b2b)}
     .street-light.left .lamp{left:calc(50% + 30px)}
     .street-light.right .lamp{right:calc(50% + 30px)}
-    .street-light .glow{position:absolute;top:60px;width:170px;height:300px;
-      background:radial-gradient(ellipse 80px 240px at 50% 0%, rgba(255,214,120,.42), rgba(255,214,120,.10) 45%, transparent 72%);
+    .street-light .glow{position:absolute;top:60px;width:170px;height:360px;
+      background:radial-gradient(ellipse 80px 300px at 50% 0%, rgba(255,214,120,.42), rgba(255,214,120,.10) 45%, transparent 72%);
       animation:flicker 18s infinite}
     .street-light.left .glow{left:calc(50% + 8px)}
     .street-light.right .glow{right:calc(50% + 8px);animation-delay:9s}
@@ -74,81 +74,89 @@
       87%{opacity:.35}88%{opacity:.9}89%{opacity:.25}90%{opacity:.85}91%{opacity:.4}92%{opacity:1}
     }
 
-    /* center hero paper (bigger, more prominent) */
-    .hero-paper{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-1deg);z-index:4;width:min(500px,52vw);
+    /* center hero paper */
+    .hero-paper{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-1deg);z-index:4;width:min(520px,50vw);
       background:linear-gradient(135deg,#f3e6c8,#efe0be 55%,#e7d3a6);
-      padding:34px 34px 30px;text-align:center;
+      padding:36px 36px 32px;text-align:center;
       box-shadow:0 16px 34px rgba(0,0,0,.5),0 2px 0 rgba(0,0,0,.15);
       clip-path:polygon(2% 4%,15% 0,33% 2%,50% 0,68% 2%,85% 0,98% 4%,100% 20%,99% 42%,100% 62%,99% 84%,98% 97%,82% 100%,60% 98%,40% 100%,20% 99%,3% 97%,1% 80%,2% 60%,0 40%,1% 20%);
     }
     .hero-paper:before{content:"";position:absolute;inset:0;
       background:radial-gradient(circle at 30% 20%,rgba(120,80,30,.10),transparent 40%),radial-gradient(circle at 80% 90%,rgba(120,80,30,.12),transparent 45%);pointer-events:none}
     .hero-title{font-family:"Arial Black","Segoe UI",sans-serif;font-weight:900;line-height:.94;letter-spacing:-1px;margin:0;text-shadow:2px 2px 0 rgba(0,0,0,.12);display:flex;flex-direction:column;align-items:center}
-    .hero-title .t-black{color:#20140a;font-size:66px}
-    .hero-title .t-red{color:#8a2018;font-size:54px}
-    .hero-stars{color:#7a1f16;font-size:20px;letter-spacing:8px;margin:10px 0 6px}
-    .hero-tag{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:19px;color:#3a2a18;line-height:1.4}
+    .hero-title .t-black{color:#20140a;font-size:68px}
+    .hero-title .t-red{color:#8a2018;font-size:56px}
+    .hero-stars{color:#7a1f16;font-size:21px;letter-spacing:9px;margin:12px 0 8px}
+    .hero-tag{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:20px;color:#3a2a18;line-height:1.4}
 
     .pin{position:absolute;width:16px;height:16px;border-radius:50%;
       background:radial-gradient(circle at 35% 30%,#ff6b6b,#c0392b 60%,#7a1f16);
       box-shadow:0 2px 5px rgba(0,0,0,.6),inset -1px -1px 2px rgba(0,0,0,.3);z-index:6}
     .pin-center{top:-6px;left:50%;transform:translateX(-50%)}
 
-    /* sticky notes (bigger) */
-    .note{position:absolute;z-index:3;width:150px;min-height:112px;padding:12px 11px;
-      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;
-      box-shadow:0 9px 18px rgba(0,0,0,.45);transition:transform .18s ease, box-shadow .18s ease;cursor:default}
-    .note:hover{transform:scale(1.06) rotate(0deg)!important;box-shadow:0 15px 28px rgba(0,0,0,.55);z-index:9}
-    .note-ic{width:44px;height:44px}
+    /* PAMPHLETS (portrait, legit paper pamphlets glued to wall) */
+    .note{position:absolute;z-index:3;width:186px;min-height:130px;padding:16px 14px;border-radius:2px;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center;
+      box-shadow:0 10px 20px rgba(0,0,0,.48),0 2px 4px rgba(0,0,0,.3);
+      transition:transform .18s ease, box-shadow .18s ease;cursor:default}
+    .note:hover{transform:scale(1.04) rotate(0deg)!important;box-shadow:0 16px 30px rgba(0,0,0,.55);z-index:9}
+    .note-ic{width:48px;height:48px}
     .note-ic svg{width:100%;height:100%}
-    .note-txt{font-family:"Segoe UI",sans-serif;font-weight:800;font-size:14px;line-height:1.24;color:#1a1a1a;text-transform:uppercase;letter-spacing:.2px}
-    .note-txt:after{content:"";display:block;width:38px;height:3px;background:#c0392b;margin:7px auto 0;border-radius:2px}
-    .note-yellow{background:#f6d94a}.note-pink{background:#f3a9c0}.note-blue{background:#a9cbe6}
-    .note-green{background:#bcd97a}.note-cream{background:#eadfc4}.note-orange{background:#f2b263}.note-purple{background:#c9b3e6}
-    .note-dark{background:#111;box-shadow:0 9px 18px rgba(0,0,0,.55);width:126px;min-height:60px}
-    .note-dark .bm{color:#f39c12;text-transform:none;font-size:15px}
+    .note-txt{font-family:"Segoe UI",sans-serif;font-weight:800;font-size:15px;line-height:1.28;color:#1a1a1a;text-transform:uppercase;letter-spacing:.3px}
+    .note-txt:after{content:"";display:block;width:42px;height:3px;background:#c0392b;margin:8px auto 0;border-radius:2px}
+    .note-yellow{background:linear-gradient(160deg,#f8e05a,#f2ce2e)}
+    .note-pink{background:linear-gradient(160deg,#f6b6ca,#ef97b3)}
+    .note-blue{background:linear-gradient(160deg,#b4d3ea,#9cc2e0)}
+    .note-green{background:linear-gradient(160deg,#c6e086,#b0d067)}
+    .note-cream{background:linear-gradient(160deg,#efe6cd,#e3d6b6)}
+    .note-orange{background:linear-gradient(160deg,#f6bd70,#efab54)}
+    .note-purple{background:linear-gradient(160deg,#d3bff0,#c3aae8)}
+    .note-dark{background:linear-gradient(160deg,#1a1a1a,#000);width:150px;min-height:66px;padding:12px}
+    .note-dark .bm{color:#f39c12;text-transform:none;font-size:16px}
     .note-dark .bm:after{background:#f39c12}
 
     /* TAPE (glued to the brick wall) */
-    .tape{position:absolute;width:60px;height:22px;background:rgba(225,215,185,.5);top:-11px;left:50%;
+    .tape{position:absolute;width:66px;height:24px;background:rgba(228,218,190,.5);top:-12px;left:50%;
       transform:translateX(-50%) rotate(-4deg);box-shadow:0 1px 3px rgba(0,0,0,.25);
       border-left:1px dashed rgba(0,0,0,.08);border-right:1px dashed rgba(0,0,0,.08)}
     .tape.tr{transform:translateX(-50%) rotate(5deg)}
-    .tape.corner{width:44px;top:-9px;left:auto;right:8px;transform:rotate(38deg)}
-    .tape.corner-l{right:auto;left:8px;transform:rotate(-38deg)}
+    .tape.corner{width:48px;top:-10px;left:auto;right:10px;transform:rotate(38deg)}
 
-    /* positions: three per side, aligned to the ends, stacked without overlap */
-    .n-tl{top:0;left:1.5%;transform:rotate(-5deg)}
-    .n-tr{top:0;right:1.5%;transform:rotate(4deg)}
-    .n-ml{top:50%;left:1.5%;margin-top:-66px;transform:rotate(3deg)}
-    .n-mr{top:50%;right:1.5%;margin-top:-66px;transform:rotate(-3deg)}
-    .n-bl{bottom:0;left:1.5%;transform:rotate(4deg)}
-    .n-br{bottom:0;right:1.5%;transform:rotate(-4deg)}
-    /* Book Mark to the north-east, nudged right, above the top-right note */
-    .n-book{top:-14px;right:0;transform:rotate(5deg);z-index:5}
+    /* positions: three per side, spread to fill the full height, aligned to ends */
+    .n-tl{top:0;left:2%;transform:rotate(-4deg)}
+    .n-tr{top:0;right:2%;transform:rotate(3deg)}
+    .n-ml{top:50%;left:2%;margin-top:-75px;transform:rotate(3deg)}
+    .n-mr{top:50%;right:2%;margin-top:-75px;transform:rotate(-3deg)}
+    .n-bl{bottom:0;left:2%;transform:rotate(3deg)}
+    .n-br{bottom:0;right:2%;transform:rotate(-3deg)}
+    /* Book Mark to the north-east, above the top-right pamphlet */
+    .n-book{top:-16px;right:0;transform:rotate(5deg);z-index:5}
     .n-book .pin{top:-6px;left:50%;transform:translateX(-50%)}
 
-    .board-resume{position:relative;z-index:4;display:flex;justify-content:center;margin-top:8px}
-    .n-resume{position:static;transform:rotate(-2deg);width:200px;min-height:70px;flex-direction:row;gap:11px}
-    .n-resume .note-ic{width:36px;height:36px;flex:none}
-    .n-resume .note-txt{font-size:12.5px;text-transform:none}
+    /* RESUME pamphlet (bigger, prominent, landscape) */
+    .board-resume{position:relative;z-index:4;display:flex;justify-content:center;margin-top:10px}
+    .n-resume{position:static;transform:rotate(-1.5deg);width:340px;min-height:88px;flex-direction:row;gap:16px;
+      padding:16px 22px;background:linear-gradient(160deg,#d3bff0,#c0a6e6)}
+    .n-resume .note-ic{width:48px;height:48px;flex:none}
+    .n-resume .note-txt{font-size:16px;text-transform:none;text-align:left;line-height:1.3}
     .n-resume .note-txt:after{display:none}
 
-    .board-strip{max-width:860px;margin:14px auto 0;text-align:center;position:relative;z-index:4}
-    .strip-note{background:#efe3c6;display:inline-block;padding:10px 24px;transform:rotate(-.5deg);
-      box-shadow:0 7px 15px rgba(0,0,0,.35);font-family:Georgia,serif;font-style:italic;font-size:15px;color:#3a2a18;max-width:92%}
-    .board-disclaimer{margin-top:11px;font-size:12px;color:#e8dcc0;opacity:.85}
+    .board-strip{max-width:880px;margin:16px auto 0;text-align:center;position:relative;z-index:4}
+    .strip-note{background:#efe3c6;display:inline-block;padding:11px 26px;transform:rotate(-.5deg);
+      box-shadow:0 7px 15px rgba(0,0,0,.35);font-family:Georgia,serif;font-style:italic;font-size:16px;color:#3a2a18;max-width:92%}
+    .board-disclaimer{margin-top:12px;font-size:12.5px;color:#e8dcc0;opacity:.85}
 
     @media (max-width:900px){
       .street-light{display:none}
-      .board-resume{display:none}
+      .board-resume{display:flex}
       .n-book{display:none}
-      .board-inner{height:auto;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding-top:6px}
-      .note{position:static;transform:none!important;width:44%;min-height:118px;margin:4px}
+      .board-inner{height:auto;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding-top:6px}
+      .note{position:static;transform:none!important;width:44%;min-height:126px;margin:4px}
       .note:hover{transform:scale(1.03)!important}
       .tape{display:none}
+      .n-resume{width:88%}
       .hero-paper{position:static;transform:none;order:-1;flex-basis:100%;width:92%;margin:0 auto 6px}
-      .hero-title .t-black{font-size:44px}.hero-title .t-red{font-size:36px}
+      .hero-title .t-black{font-size:46px}.hero-title .t-red{font-size:38px}
     }
 
     /* QUOTE strip (replaces sandbox banner spot) */
