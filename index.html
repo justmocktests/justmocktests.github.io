@@ -138,6 +138,8 @@
     .n-resume .note-ic{width:38px;height:38px;flex:none}
     .n-resume .note-txt{font-size:18px;text-transform:none;text-align:left;line-height:1.25;letter-spacing:0;white-space:nowrap}
     .n-resume .note-txt:after{display:none}
+    /* keep the centring transform on hover, otherwise it jumps right by half its width */
+    .n-resume:hover{transform:translateX(-50%) scale(1.03) rotate(0deg)!important}
 
     .board-strip{max-width:880px;margin:12px auto 0;text-align:center;position:relative;z-index:4}
     .strip-note{background:linear-gradient(158deg,#f4ead0,#e9dcbd);display:inline-block;padding:9px 24px;transform:rotate(-.4deg);
@@ -436,7 +438,7 @@
 
     function renderHome(){
       var c=APP.config, name=c.SITE_NAME||"Just Mock Tests";
-      var tag=c.TAGLINE||"Real Mock Tests without any Trouble. No Account, No Login, No ads and No Spam.";
+      var tag=c.TAGLINE||"Real Mock Tests without any Trouble - No ads and No Spam";
       var html='<div class="board">'+
         '<div class="street-light left"><div class="pole"></div><div class="arm"></div><div class="lamp"></div><div class="bulb"></div><div class="glow"></div></div>'+
         '<div class="street-light right"><div class="pole"></div><div class="arm"></div><div class="lamp"></div><div class="bulb"></div><div class="glow"></div></div>'+
