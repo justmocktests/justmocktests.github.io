@@ -46,7 +46,7 @@
     .board:after{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
       background:radial-gradient(circle at 20% 30%,rgba(255,180,120,.06),transparent 40%),radial-gradient(circle at 75% 70%,rgba(255,180,120,.05),transparent 45%)}
 
-    .board-inner{position:relative;max-width:1300px;margin:0 auto;height:262px;z-index:2}
+    .board-inner{position:relative;max-width:1300px;margin:0 auto;height:316px;z-index:2}
 
     /* STREET LIGHTS */
     .street-light{position:absolute;top:0;bottom:0;width:70px;z-index:1;pointer-events:none}
@@ -75,7 +75,7 @@
     }
 
     /* center hero paper */
-    .hero-paper{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-1deg);z-index:4;width:min(420px,42vw);
+    .hero-paper{position:absolute;top:45%;left:50%;transform:translate(-50%,-50%) rotate(-1deg);z-index:4;width:min(420px,42vw);
       background:linear-gradient(135deg,#f3e6c8,#efe0be 55%,#e7d3a6);
       padding:22px 26px 20px;text-align:center;
       box-shadow:0 14px 28px rgba(0,0,0,.5),0 2px 0 rgba(0,0,0,.15);
@@ -94,62 +94,68 @@
       box-shadow:0 2px 5px rgba(0,0,0,.6),inset -1px -1px 2px rgba(0,0,0,.3);z-index:6}
     .pin-center{top:-6px;left:50%;transform:translateX(-50%)}
 
-    /* PAMPHLETS (printed paper, glued to the wall) */
-    .note{position:absolute;z-index:3;width:224px;height:78px;padding:10px 13px;border-radius:1px;
+    /* PAMPHLETS (printed paper, pasted flat to the wall, no tape) */
+    .note{position:absolute;z-index:3;width:228px;height:76px;padding:9px 14px;border-radius:1px;
       display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:11px;text-align:left;
-      box-shadow:0 7px 15px rgba(0,0,0,.5),0 1px 3px rgba(0,0,0,.35),inset 0 0 0 1px rgba(90,60,20,.14);
+      box-shadow:0 2px 5px rgba(0,0,0,.55),inset 0 0 0 1px rgba(90,60,20,.16);
       transition:transform .18s ease, box-shadow .18s ease;cursor:default}
-    .note:hover{transform:scale(1.04) rotate(0deg)!important;box-shadow:0 14px 26px rgba(0,0,0,.55),inset 0 0 0 1px rgba(90,60,20,.14);z-index:9}
-    .note-ic{width:34px;height:34px;flex:none}
+    /* wheatpaste wrinkles and paste sheen */
+    .note:before{content:"";position:absolute;inset:0;pointer-events:none;
+      background:
+        linear-gradient(102deg,transparent 26%,rgba(0,0,0,.05) 27.5%,transparent 29%),
+        linear-gradient(96deg,transparent 68%,rgba(0,0,0,.04) 69.5%,transparent 71%),
+        linear-gradient(78deg,transparent 45%,rgba(255,255,255,.28) 47%,transparent 49%),
+        radial-gradient(circle at 8% 12%,rgba(0,0,0,.07),transparent 30%),
+        radial-gradient(circle at 94% 88%,rgba(0,0,0,.07),transparent 32%)}
+    .note:hover{transform:scale(1.03) rotate(0deg)!important;box-shadow:0 4px 12px rgba(0,0,0,.6),inset 0 0 0 1px rgba(90,60,20,.16);z-index:9}
+    .note-ic{width:34px;height:34px;flex:none;position:relative;z-index:2}
     .note-ic svg{width:100%;height:100%}
-    .note-txt{font-family:"Segoe UI",sans-serif;font-weight:800;font-size:12.5px;line-height:1.24;color:#1a1a1a;text-transform:uppercase;letter-spacing:.3px}
+    .note-txt{font-family:"Segoe UI",sans-serif;font-weight:800;font-size:12.5px;line-height:1.24;color:#1a1a1a;text-transform:uppercase;letter-spacing:.3px;position:relative;z-index:2}
     .note-txt:after{content:"";display:block;width:32px;height:2px;background:#c0392b;margin:5px 0 0;border-radius:2px}
     /* printed pamphlet stock: yellow and white */
     .note-yellow{background:linear-gradient(158deg,#fbeeae 0%,#f6e296 55%,#efd77f 100%)}
     .note-white{background:linear-gradient(158deg,#fdfbf3 0%,#f6f1e2 55%,#eee7d3 100%)}
-    .note-dark{background:linear-gradient(160deg,#1a1a1a,#000);width:150px;height:auto;min-height:60px;padding:11px;
-      box-shadow:0 7px 15px rgba(0,0,0,.55)}
+    .note-dark{background:linear-gradient(160deg,#1a1a1a,#000);width:148px;height:auto;min-height:46px;padding:10px 12px;
+      box-shadow:0 2px 5px rgba(0,0,0,.6)}
     .note-dark .bm{color:#f39c12;text-transform:none;font-size:15px}
-    .note-dark .bm:after{background:#f39c12}
+    .note-dark .bm:after{display:none}
 
     /* TAPE (glued to the brick wall) */
-    .tape{position:absolute;width:66px;height:24px;background:rgba(228,218,190,.5);top:-12px;left:50%;
-      transform:translateX(-50%) rotate(-4deg);box-shadow:0 1px 3px rgba(0,0,0,.25);
-      border-left:1px dashed rgba(0,0,0,.08);border-right:1px dashed rgba(0,0,0,.08)}
-    .tape.tr{transform:translateX(-50%) rotate(5deg)}
-    .tape.corner{width:48px;top:-10px;left:auto;right:10px;transform:rotate(38deg)}
+    /* positions: three per side, equidistant, bottom row flush with the wall bottom */
+    .n-tl{top:56px;left:2%;transform:rotate(-1.5deg)}
+    .n-tr{top:56px;right:2%;transform:rotate(1.2deg)}
+    .n-ml{top:148px;left:2%;transform:rotate(1.2deg)}
+    .n-mr{top:148px;right:2%;transform:rotate(-1.2deg)}
+    .n-bl{bottom:0;left:2%;transform:rotate(1.2deg)}
+    .n-br{bottom:0;right:2%;transform:rotate(-1.5deg)}
+    /* Book Mark callout, north-east corner, clear of the pamphlet below it */
+    .n-book{top:0;right:0;transform:rotate(3deg);z-index:5}
 
-    /* positions: three per side, equidistant, spread to the bottom */
-    .n-tl{top:0;left:2%;transform:rotate(-2.5deg)}
-    .n-tr{top:0;right:2%;transform:rotate(2deg)}
-    .n-ml{top:50%;left:2%;margin-top:-39px;transform:rotate(2deg)}
-    .n-mr{top:50%;right:2%;margin-top:-39px;transform:rotate(-2deg)}
-    .n-bl{bottom:0;left:2%;transform:rotate(2deg)}
-    .n-br{bottom:0;right:2%;transform:rotate(-2.5deg)}
-    /* Book Mark to the north-east, above the top-right pamphlet */
-    .n-book{top:-16px;right:0;transform:rotate(5deg);z-index:5}
-    .n-book .pin{top:-6px;left:50%;transform:translateX(-50%)}
-
-    /* RESUME pamphlet (headline feature, large type) */
-    .board-resume{position:relative;z-index:4;display:flex;justify-content:center;margin-top:10px}
-    .n-resume{position:static;transform:rotate(-1.2deg);width:430px;height:auto;min-height:78px;flex-direction:row;gap:16px;
-      padding:14px 26px;background:linear-gradient(158deg,#fbeeae 0%,#f6e296 55%,#efd77f 100%)}
-    .n-resume .note-ic{width:46px;height:46px;flex:none}
-    .n-resume .note-txt{font-size:18px;text-transform:none;text-align:left;line-height:1.3;letter-spacing:0}
+    /* RESUME banner (headline feature, long horizontal, pasted at wall bottom) */
+    .n-resume{position:absolute;bottom:0;left:50%;width:min(580px,calc(100% - 540px));height:58px;
+      transform:translateX(-50%) rotate(-0.6deg);flex-direction:row;gap:15px;justify-content:center;
+      padding:10px 24px;background:linear-gradient(158deg,#fbeeae 0%,#f6e296 55%,#efd77f 100%);z-index:4}
+    .n-resume .note-ic{width:38px;height:38px;flex:none}
+    .n-resume .note-txt{font-size:18px;text-transform:none;text-align:left;line-height:1.25;letter-spacing:0;white-space:nowrap}
     .n-resume .note-txt:after{display:none}
 
-    .board-strip{max-width:880px;margin:10px auto 0;text-align:center;position:relative;z-index:4}
-    .board-disclaimer{font-size:11.5px;color:#e8dcc0;opacity:.85}
+    .board-strip{max-width:880px;margin:12px auto 0;text-align:center;position:relative;z-index:4}
+    .strip-note{background:linear-gradient(158deg,#f4ead0,#e9dcbd);display:inline-block;padding:9px 24px;transform:rotate(-.4deg);
+      box-shadow:0 2px 5px rgba(0,0,0,.5),inset 0 0 0 1px rgba(90,60,20,.14);
+      font-family:Georgia,serif;font-style:italic;font-size:14.5px;color:#3a2a18;max-width:94%}
+    .board-disclaimer{margin-top:9px;font-size:11.5px;color:#e8dcc0;opacity:.85}
 
     @media (max-width:900px){
       .street-light{display:none}
-      .board-resume{display:flex}
       .n-book{display:none}
       .board-inner{height:auto;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding-top:6px}
-      .note{position:static;transform:none!important;width:44%;min-height:126px;margin:4px}
-      .note:hover{transform:scale(1.03)!important}
-      .tape{display:none}
-      .n-resume{width:88%}
+      .note{position:static;transform:none!important;width:46%;height:auto;min-height:92px;margin:3px;
+        flex-direction:column;text-align:center;justify-content:center;gap:7px}
+      .note .note-txt{text-align:center}
+      .note .note-txt:after{margin:5px auto 0}
+      .note:hover{transform:scale(1.02)!important}
+      .n-resume{position:static;margin-left:0;width:96%;height:auto;min-height:70px;flex-direction:row;text-align:left}
+      .n-resume .note-txt{white-space:normal;text-align:left;font-size:15px}
       .hero-paper{position:static;transform:none;order:-1;flex-basis:100%;width:92%;margin:0 auto 6px}
       .hero-title .t-black{font-size:46px}.hero-title .t-red{font-size:38px}
     }
@@ -436,27 +442,27 @@
         '<div class="street-light right"><div class="pole"></div><div class="arm"></div><div class="lamp"></div><div class="bulb"></div><div class="glow"></div></div>'+
         '<div class="board-inner">'+
           // top-left: No Account
-          '<div class="note note-yellow n-tl"><span class="tape"></span>'+
+          '<div class="note note-yellow n-tl">'+
             '<div class="note-ic">'+ICON_NOACC+'</div>'+
             '<div class="note-txt">No Account<br>No Login<br>No Trouble</div></div>'+
           // top-right: All Competitive Exams
-          '<div class="note note-white n-tr"><span class="tape tr"></span>'+
+          '<div class="note note-white n-tr">'+
             '<div class="note-ic">'+ICON_TROPHY+'</div>'+
             '<div class="note-txt">All Competitive<br>Exams Covered</div></div>'+
           // mid-left: Past Papers
-          '<div class="note note-white n-ml"><span class="tape"></span>'+
+          '<div class="note note-white n-ml">'+
             '<div class="note-ic">'+ICON_BOOK+'</div>'+
             '<div class="note-txt">Questions from<br>Past Papers</div></div>'+
           // mid-right: Instant Results
-          '<div class="note note-yellow n-mr"><span class="tape tr"></span>'+
+          '<div class="note note-yellow n-mr">'+
             '<div class="note-ic">'+ICON_BOLT+'</div>'+
             '<div class="note-txt">Instant<br>Results</div></div>'+
           // bottom-left: Detailed Scorecards
-          '<div class="note note-yellow n-bl"><span class="tape"></span>'+
+          '<div class="note note-yellow n-bl">'+
             '<div class="note-ic">'+ICON_LIST+'</div>'+
             '<div class="note-txt">Detailed<br>Scorecards</div></div>'+
           // bottom-right: Affordable
-          '<div class="note note-white n-br"><span class="tape tr"></span>'+
+          '<div class="note note-white n-br">'+
             '<div class="note-ic">'+ICON_TAG+'</div>'+
             '<div class="note-txt">All at Very<br>Affordable Price</div></div>'+
           // CENTER hero paper
@@ -466,17 +472,16 @@
             '<div class="hero-stars">&#9733; &#9733; &#9733; &#9733; &#9733;</div>'+
             '<div class="hero-tag">Practice More. Score Higher.<br>Succeed.</div>'+
           '</div>'+
-          // Bookmark pamphlet north-east, taped
-          '<div class="note note-dark n-book"><span class="tape corner"></span>'+
+          // Bookmark pamphlet, north-east
+          '<div class="note note-dark n-book">'+
             '<div class="note-txt bm">Book Mark this</div></div>'+
-        '</div>'+
-        // Resume pamphlet on its own line strip
-        '<div class="board-resume">'+
-          '<div class="note note-yellow n-resume"><span class="tape"></span>'+
+          // Resume banner, pasted along the bottom of the wall
+          '<div class="note note-yellow n-resume">'+
             '<div class="note-ic">'+ICON_RESUME+'</div>'+
-            '<div class="note-txt">Resume test from<br>where you left,<br>if you drop off</div></div>'+
+            '<div class="note-txt">Resume test from where you left, if you drop off</div></div>'+
         '</div>'+
         '<div class="board-strip">'+
+          '<div class="strip-note"><span>'+esc(tag)+'</span></div>'+
           '<div class="board-disclaimer">Practice tests only. Not affiliated with any government or examination body.</div>'+
         '</div>'+
       '</div><div class="container">';
