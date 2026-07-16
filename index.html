@@ -147,8 +147,18 @@
       font-family:Georgia,serif;font-style:italic;font-size:14.5px;color:#3a2a18;max-width:94%}
     .board-disclaimer{margin-top:9px;font-size:11.5px;color:#e8dcc0;opacity:.85}
 
+    /* Phones and tablets: no light effects at all.
+       The wall keeps its brick and pamphlets, but every glow, sheen and
+       lamp is switched off so nothing streaks across a small screen. */
+    @media (max-width:1024px){
+      .street-light{display:none!important}
+      .street-light .glow,.street-light .bulb,.street-light .lamp,.street-light .pole,.street-light .arm{display:none!important;animation:none!important;box-shadow:none!important;background:none!important}
+      .note:before{display:none!important}
+      .board:after{display:none!important}
+      .hero-paper:before{display:none!important}
+    }
+
     @media (max-width:900px){
-      .street-light{display:none}
       .n-book{display:none}
       .board-inner{height:auto;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding-top:6px}
       .note{position:static;transform:none!important;width:46%;height:auto;min-height:92px;margin:3px;
