@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Just Mock Tests - Online Practice Exams</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     :root{
       --ink:#0f172a; --ink-soft:#334155; --muted:#64748b;
@@ -954,7 +955,7 @@
       var th=scoreTheme(r.accuracy);
       var notAns=r.review.filter(function(x){return x.selected==="Not Answered";}).length;
 
-      var h='<div class="container"><div class="score-wrapper"><div class="pdf-area" style="border-top:8px solid '+th.bg+'">'+
+      var h='<div class="container"><div class="score-wrapper"><div id="pdfArea" class="pdf-area" style="border-top:8px solid '+th.bg+'">'+
         '<div class="score-head" style="background:'+th.grad+';color:'+th.fg+';border-radius:12px;padding:26px 20px;border-bottom:none">'+
           '<h1 style="color:'+th.fg+';font-size:40px;letter-spacing:-.5px">Just Mock Tests Score</h1></div>'+
         '<div class="score-meta">'+
@@ -999,7 +1000,99 @@
     }
 
     /* ============ PDF ============ */
+    /* Dispatcher: Devanagari subjects (Marathi, Sanskrit, Hindi) use an image
+       capture of the on-screen scorecard so complex script shaping is always
+       correct. Every other subject keeps the original selectable-text PDF,
+       which also carries the clickable economics link. */
+    function hasDevanagari(str){
+      // Unicode Devanagari block U+0900 to U+097F (covers Marathi, Sanskrit, Hindi)
+      return /[\u0900-\u097F]/.test(String(str==null?"":str));
+    }
+    function scorecardIsDevanagari(){
+      if(hasDevanagari(APP.subjectLabel)) return true;
+      var qs=APP.questions||[];
+      for(var i=0;i<qs.length;i++){
+        if(hasDevanagari(qs[i].question)) return true;
+        if(hasDevanagari(qs[i].optionA)||hasDevanagari(qs[i].optionB)||hasDevanagari(qs[i].optionC)||hasDevanagari(qs[i].optionD)) return true;
+      }
+      var rv=(APP.result&&APP.result.review)||[];
+      for(var j=0;j<rv.length;j++){ if(hasDevanagari(rv[j].explanation)) return true; }
+      return false;
+    }
+
     function pdf(){
+      if(scorecardIsDevanagari()) pdfImage();
+      else pdfText();
+    }
+
+    /* Devanagari path: photograph the rendered scorecard with html2canvas
+       (browser shaping = correct conjuncts/matras) and lay it across A4 pages. */
+    function pdfImage(){
+      var area=$("pdfArea");
+      if(!area){ notify("Scorecard not ready, please try again.","error"); return; }
+      if(typeof html2canvas==="undefined"){
+        notify("PDF tool still loading, try again in a moment.","error"); return;
+      }
+      var Ctor=(window.jspdf&&window.jspdf.jsPDF)?window.jspdf.jsPDF:null;
+      if(!Ctor){ notify("PDF tool still loading, try again in a moment.","error"); return; }
+      showLoader("Preparing your scorecard...");
+
+      // Render at 2x for crisp text; white background so rounded corners do not go black.
+      html2canvas(area, {scale:2, backgroundColor:"#ffffff", useCORS:true, logging:false})
+      .then(function(canvas){
+        try{
+          var doc=new Ctor({unit:"pt",format:"a4"});
+          var pageW=doc.internal.pageSize.getWidth();
+          var pageH=doc.internal.pageSize.getHeight();
+          var margin=24, footArea=30;
+          var usableW=pageW-margin*2;
+          var usableH=pageH-margin*2-footArea;
+
+          // Scale the full-width capture to the usable page width.
+          var imgW=usableW;
+          var imgH=canvas.height*(imgW/canvas.width);
+
+          // Slice the tall canvas into page-height chunks so nothing is cut mid-line.
+          var pxPerPt=canvas.width/imgW;              // canvas px per PDF point
+          var sliceHpx=Math.floor(usableH*pxPerPt);   // canvas px that fit on one page
+          var totalPx=canvas.height, offset=0, pageNo=0;
+          var totalPages=Math.ceil(totalPx/sliceHpx);
+
+          while(offset<totalPx){
+            pageNo++;
+            var hpx=Math.min(sliceHpx, totalPx-offset);
+            var slice=document.createElement("canvas");
+            slice.width=canvas.width; slice.height=hpx;
+            var ctx=slice.getContext("2d");
+            ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,slice.width,slice.height);
+            ctx.drawImage(canvas, 0, offset, canvas.width, hpx, 0, 0, canvas.width, hpx);
+            var sliceImg=slice.toDataURL("image/jpeg", 0.92);
+            var sliceHpt=hpx/pxPerPt;
+            if(pageNo>1) doc.addPage();
+            doc.addImage(sliceImg, "JPEG", margin, margin, imgW, sliceHpt);
+            // footer on every page
+            doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(148,163,184);
+            doc.text("Just Mock Tests, for self-practice only, not a certification", margin, pageH-16);
+            doc.text("Page "+pageNo+" of "+totalPages, pageW-margin, pageH-16, {align:"right"});
+            offset+=hpx;
+          }
+
+          hideLoader();
+          doc.save("JustMockTests_"+Date.now()+".pdf");
+        }catch(err){
+          hideLoader(); console.error(err);
+          notify("Could not build the PDF. Please try again.","error");
+        }
+      })
+      .catch(function(err){
+        hideLoader(); console.error(err);
+        notify("Could not capture the scorecard. Please try again.","error");
+      });
+    }
+
+    /* Original selectable-text PDF: used for English/Economics scorecards.
+       Unchanged, including the clickable economics channel link. */
+    function pdfText(){
       var Ctor=(window.jspdf&&window.jspdf.jsPDF)?window.jspdf.jsPDF:null;
       if(!Ctor){ notify("PDF tool still loading, try again in a moment.","error"); return; }
       notify("Generating PDF...","info");
