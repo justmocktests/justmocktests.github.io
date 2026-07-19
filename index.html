@@ -1104,29 +1104,41 @@
       var pageW=doc.internal.pageSize.getWidth(), pageH=doc.internal.pageSize.getHeight();
       var margin=40, contentW=pageW-margin*2, innerW=contentW-20, y=0;
       var wrapW=innerW-8;  // safety margin so text never touches the right border
+      // jsPDF's built-in Helvetica is Latin-1 only. Characters outside it (curly
+      // quotes, primes, en/em dashes, non-breaking spaces, etc.) render with
+      // broken letter-spacing that overflows the box AND make getTextWidth lie.
+      // Convert those to safe ASCII equivalents before measuring or drawing.
+      function asciiSafe(str){
+        return String(str==null?"":str)
+          .replace(/[\u2018\u2019\u201A\u201B\u2032]/g,"'")   // curly single quotes, prime
+          .replace(/[\u201C\u201D\u201E\u201F\u2033]/g,'"')   // curly double quotes, double prime
+          .replace(/[\u2013\u2014\u2015]/g,"-")               // en/em dashes
+          .replace(/[\u2212]/g,"-")                           // minus sign
+          .replace(/[\u00A0\u2007\u202F]/g," ")               // non-breaking/figure spaces
+          .replace(/[\u2026]/g,"...")                          // ellipsis
+          .replace(/[\u2022\u00B7]/g,"-")                     // bullets
+          .replace(/[\u00D7]/g,"x").replace(/[\u00F7]/g,"/")  // multiply, divide
+          .replace(/[\u2264]/g,"<=").replace(/[\u2265]/g,">=")
+          .replace(/[^\x00-\xFF]/g,"?");                       // any remaining non-Latin1 -> ?
+      }
       // Reliable wrap: measure every candidate line and never let one exceed wrapW.
-      // Handles both long space-less tokens AND many-short-word lines that
-      // jsPDF's splitTextToSize wraps too loosely. Splits over-long tokens by
-      // character. Returns an array of lines, each guaranteed to fit.
       function wrapLines(txt, sz, style){
         doc.setFont("helvetica", style||"normal"); doc.setFontSize(sz||10.5);
-        var words=String(txt==null?"":txt).split(/\s+/);
+        var words=asciiSafe(txt).split(/\s+/);
         var lines=[], cur="";
         function pushChunkedWord(w){
-          // word itself is wider than a full line: break it by character
           var piece="";
           for(var k=0;k<w.length;k++){
             if(doc.getTextWidth(piece+w[k])>wrapW && piece){ lines.push(piece); piece=w[k]; }
             else piece+=w[k];
           }
-          return piece; // remainder becomes start of current line
+          return piece;
         }
         for(var i=0;i<words.length;i++){
           var w=words[i];
           if(w==="") continue;
           var trial=cur?cur+" "+w:w;
           if(doc.getTextWidth(trial)<=wrapW){ cur=trial; continue; }
-          // trial too wide: flush current line first
           if(cur){ lines.push(cur); cur=""; }
           if(doc.getTextWidth(w)>wrapW){ cur=pushChunkedWord(w); }
           else cur=w;
