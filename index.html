@@ -1104,21 +1104,35 @@
       var pageW=doc.internal.pageSize.getWidth(), pageH=doc.internal.pageSize.getHeight();
       var margin=40, contentW=pageW-margin*2, innerW=contentW-20, y=0;
       var wrapW=innerW-8;  // safety margin so text never touches the right border
-      // Hard-break any single token longer than what fits (e.g. formulas with no
-      // spaces) by inserting real newlines, so splitTextToSize can never overflow.
-      function breakLongTokens(txt, sz, style){
+      // Reliable wrap: measure every candidate line and never let one exceed wrapW.
+      // Handles both long space-less tokens AND many-short-word lines that
+      // jsPDF's splitTextToSize wraps too loosely. Splits over-long tokens by
+      // character. Returns an array of lines, each guaranteed to fit.
+      function wrapLines(txt, sz, style){
         doc.setFont("helvetica", style||"normal"); doc.setFontSize(sz||10.5);
-        return String(txt==null?"":txt).split(/(\s+)/).map(function(tok){
-          if(/^\s+$/.test(tok)) return tok;
-          if(doc.getTextWidth(tok)<=wrapW) return tok;
-          var out="", cur="";
-          for(var i=0;i<tok.length;i++){
-            var test=cur+tok[i];
-            if(doc.getTextWidth(test)>wrapW && cur){ out+=cur+"\n"; cur=tok[i]; }
-            else cur=test;
+        var words=String(txt==null?"":txt).split(/\s+/);
+        var lines=[], cur="";
+        function pushChunkedWord(w){
+          // word itself is wider than a full line: break it by character
+          var piece="";
+          for(var k=0;k<w.length;k++){
+            if(doc.getTextWidth(piece+w[k])>wrapW && piece){ lines.push(piece); piece=w[k]; }
+            else piece+=w[k];
           }
-          return out+cur;
-        }).join("");
+          return piece; // remainder becomes start of current line
+        }
+        for(var i=0;i<words.length;i++){
+          var w=words[i];
+          if(w==="") continue;
+          var trial=cur?cur+" "+w:w;
+          if(doc.getTextWidth(trial)<=wrapW){ cur=trial; continue; }
+          // trial too wide: flush current line first
+          if(cur){ lines.push(cur); cur=""; }
+          if(doc.getTextWidth(w)>wrapW){ cur=pushChunkedWord(w); }
+          else cur=w;
+        }
+        if(cur) lines.push(cur);
+        return lines.length?lines:[""];
       }
       var th=scoreTheme(r.accuracy);
 
@@ -1146,7 +1160,7 @@
       // banner message
       var bg2=hexToRgb(th.bannerBg);
       doc.setFillColor(bg2[0],bg2[1],bg2[2]);
-      var bLines=doc.splitTextToSize(breakLongTokens(th.banner,13,"bold"), wrapW);
+      var bLines=wrapLines(th.banner, 13, "bold");
       var bH=bLines.length*14+14;
       doc.roundedRect(margin,y,contentW,bH,6,6,"F");
       var fg2=hexToRgb(th.bannerFg);
@@ -1179,13 +1193,11 @@
         var yourTxt=na?"Not Answered":(item.selected+", "+letterText(q,item.selected));
         var corrTxt=item.answer+", "+letterText(q,item.answer);
 
-        doc.setFont("helvetica","bold"); doc.setFontSize(11);
-        var qLines=doc.splitTextToSize(breakLongTokens("Q"+(i+1)+". "+q.question,11,"bold"), wrapW);
-        doc.setFont("helvetica","normal"); doc.setFontSize(10.5);
-        var yourLines=doc.splitTextToSize(breakLongTokens("Your answer: "+yourTxt,10.5,"normal"), wrapW);
-        var corrLines=doc.splitTextToSize(breakLongTokens("Correct answer: "+corrTxt,10.5,"normal"), wrapW);
+        var qLines=wrapLines("Q"+(i+1)+". "+q.question, 11, "bold");
+        var yourLines=wrapLines("Your answer: "+yourTxt, 10.5, "normal");
+        var corrLines=wrapLines("Correct answer: "+corrTxt, 10.5, "normal");
         var explLines=[];
-        if(item.explanation){ doc.setFont("helvetica","italic"); doc.setFontSize(9.5); explLines=doc.splitTextToSize(breakLongTokens("Explanation: "+item.explanation,9.5,"italic"), wrapW); }
+        if(item.explanation){ explLines=wrapLines("Explanation: "+item.explanation, 9.5, "italic"); }
 
         var TOP=18, BOT=14;
         var blockH=TOP + qLines.length*14 + 4 + yourLines.length*13 + corrLines.length*13 + 15 + (explLines.length?8+explLines.length*13:0) + BOT;
