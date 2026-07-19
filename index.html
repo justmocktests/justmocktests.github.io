@@ -262,7 +262,11 @@
     .progress-track{height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin-bottom:18px}
     .progress-fill{height:100%;background:linear-gradient(90deg,var(--brand),#3b82f6);width:0;transition:width .3s ease}
     .question-card{background:#fff;border-radius:var(--radius);padding:26px;box-shadow:var(--shadow);position:relative}
-    .source-tag{position:absolute;top:10px;right:14px;font-size:11px;color:#888;font-style:italic;background:#f4f4f6;padding:3px 9px;border-radius:20px;max-width:55%;text-align:right;line-height:1.3}
+    .source-tag{position:absolute;top:10px;right:14px;font-size:11px;font-style:italic;padding:3px 9px;border-radius:20px;max-width:55%;text-align:right;line-height:1.3;border:2px solid;animation:sourceFlip 4s steps(1,end) infinite}
+    @keyframes sourceFlip{
+      0%,50%{background:#000;color:#facc15;border-color:#16a34a}
+      50.01%,100%{background:#fff;color:#dc2626;border-color:#1e3a8a}
+    }
     .q-count{color:var(--muted);font-weight:700;font-size:14px;margin-bottom:10px}
     .question-text{font-size:21px;line-height:1.5;margin-bottom:18px;font-weight:600}
     .question-image{max-width:100%;height:auto;border-radius:10px;margin-bottom:18px;max-height:320px}
@@ -1099,6 +1103,23 @@
       var r=APP.result, doc=new Ctor({unit:"pt",format:"a4"});
       var pageW=doc.internal.pageSize.getWidth(), pageH=doc.internal.pageSize.getHeight();
       var margin=40, contentW=pageW-margin*2, innerW=contentW-20, y=0;
+      var wrapW=innerW-8;  // safety margin so text never touches the right border
+      // Hard-break any single token longer than what fits (e.g. formulas with no
+      // spaces) by inserting real newlines, so splitTextToSize can never overflow.
+      function breakLongTokens(txt, sz, style){
+        doc.setFont("helvetica", style||"normal"); doc.setFontSize(sz||10.5);
+        return String(txt==null?"":txt).split(/(\s+)/).map(function(tok){
+          if(/^\s+$/.test(tok)) return tok;
+          if(doc.getTextWidth(tok)<=wrapW) return tok;
+          var out="", cur="";
+          for(var i=0;i<tok.length;i++){
+            var test=cur+tok[i];
+            if(doc.getTextWidth(test)>wrapW && cur){ out+=cur+"\n"; cur=tok[i]; }
+            else cur=test;
+          }
+          return out+cur;
+        }).join("");
+      }
       var th=scoreTheme(r.accuracy);
 
       function need(px){ if(y+px>pageH-46){ doc.addPage(); y=margin; } }
@@ -1125,7 +1146,7 @@
       // banner message
       var bg2=hexToRgb(th.bannerBg);
       doc.setFillColor(bg2[0],bg2[1],bg2[2]);
-      var bLines=doc.splitTextToSize(th.banner, innerW);
+      var bLines=doc.splitTextToSize(breakLongTokens(th.banner,13,"bold"), wrapW);
       var bH=bLines.length*14+14;
       doc.roundedRect(margin,y,contentW,bH,6,6,"F");
       var fg2=hexToRgb(th.bannerFg);
@@ -1159,12 +1180,12 @@
         var corrTxt=item.answer+", "+letterText(q,item.answer);
 
         doc.setFont("helvetica","bold"); doc.setFontSize(11);
-        var qLines=doc.splitTextToSize("Q"+(i+1)+". "+q.question, innerW);
+        var qLines=doc.splitTextToSize(breakLongTokens("Q"+(i+1)+". "+q.question,11,"bold"), wrapW);
         doc.setFont("helvetica","normal"); doc.setFontSize(10.5);
-        var yourLines=doc.splitTextToSize("Your answer: "+yourTxt, innerW);
-        var corrLines=doc.splitTextToSize("Correct answer: "+corrTxt, innerW);
+        var yourLines=doc.splitTextToSize(breakLongTokens("Your answer: "+yourTxt,10.5,"normal"), wrapW);
+        var corrLines=doc.splitTextToSize(breakLongTokens("Correct answer: "+corrTxt,10.5,"normal"), wrapW);
         var explLines=[];
-        if(item.explanation){ doc.setFont("helvetica","italic"); doc.setFontSize(9.5); explLines=doc.splitTextToSize("Explanation: "+item.explanation, innerW); }
+        if(item.explanation){ doc.setFont("helvetica","italic"); doc.setFontSize(9.5); explLines=doc.splitTextToSize(breakLongTokens("Explanation: "+item.explanation,9.5,"italic"), wrapW); }
 
         var TOP=18, BOT=14;
         var blockH=TOP + qLines.length*14 + 4 + yourLines.length*13 + corrLines.length*13 + 15 + (explLines.length?8+explLines.length*13:0) + BOT;
