@@ -916,7 +916,12 @@
       var str=""; for(var i=0;i<APP.questions.length;i++){ var a=APP.answers[i]; str+=(a==="A"||a==="B"||a==="C"||a==="D")?a:"X"; }
       api("submitExam",{token:APP.examToken,answers:str}).then(function(res){
         if(!res||res.error){ notify(res&&res.message?res.message:"Could not submit your test.","error"); return; }
-        APP.result={score:res.score,total:res.total,accuracy:res.accuracy,review:res.review,elapsed:Math.floor((Date.now()-APP.startTime)/1000)};
+        // Active time only: the countdown decrements just while the test is open,
+        // so (total allotted - remaining) excludes any time the user was away.
+        // This stays correct across any number of resume interruptions.
+        var activeElapsed=(APP.length*60)-APP.countdown;
+        if(activeElapsed<0) activeElapsed=0;
+        APP.result={score:res.score,total:res.total,accuracy:res.accuracy,review:res.review,elapsed:activeElapsed};
         clearSession(); renderScorecard();
       });
     }
@@ -1041,7 +1046,17 @@
       if(!Ctor){ notify("PDF tool still loading, try again in a moment.","error"); return; }
       showLoader("Preparing your scorecard...");
 
-      // Render at 2x for crisp text; white background so rounded corners do not go black.
+      // Capture the safe cut points BEFORE rasterising: the boundaries between
+      // question cards, measured relative to the scorecard top. A page break may
+      // land only at one of these gaps, so a question is never split across pages.
+      var areaTop=area.getBoundingClientRect().top;
+      var cardBreaks=[];
+      var cards=area.querySelectorAll(".review-card");
+      for(var ci=0; ci<cards.length; ci++){
+        var r=cards[ci].getBoundingClientRect();
+        cardBreaks.push({ top:r.top-areaTop, bottom:r.bottom-areaTop });
+      }
+
       html2canvas(area, {scale:2, backgroundColor:"#ffffff", useCORS:true, logging:false})
       .then(function(canvas){
         try{
@@ -1052,33 +1067,54 @@
           var usableW=pageW-margin*2;
           var usableH=pageH-margin*2-footArea;
 
-          // Scale the full-width capture to the usable page width.
           var imgW=usableW;
-          var imgH=canvas.height*(imgW/canvas.width);
+          var pxPerPt=canvas.width/imgW;               // canvas px per PDF point
+          var cssToCanvas=canvas.height/area.getBoundingClientRect().height; // css px -> canvas px
+          var maxSliceHpx=Math.floor(usableH*pxPerPt); // most canvas px that fit on one page
 
-          // Slice the tall canvas into page-height chunks so nothing is cut mid-line.
-          var pxPerPt=canvas.width/imgW;              // canvas px per PDF point
-          var sliceHpx=Math.floor(usableH*pxPerPt);   // canvas px that fit on one page
-          var totalPx=canvas.height, offset=0, pageNo=0;
-          var totalPages=Math.ceil(totalPx/sliceHpx);
+          // Build the list of preferred cut points (card bottoms) in canvas px.
+          var breaks=cardBreaks.map(function(b){ return b.bottom*cssToCanvas; });
+          var cardTops=cardBreaks.map(function(b){ return b.top*cssToCanvas; });
 
+          var totalPx=canvas.height, offset=0, slices=[];
           while(offset<totalPx){
-            pageNo++;
-            var hpx=Math.min(sliceHpx, totalPx-offset);
+            var hardLimit=offset+maxSliceHpx;
+            if(hardLimit>=totalPx){ slices.push({from:offset,to:totalPx}); break; }
+
+            // Find the last card-bottom that fits within this page.
+            var cut=-1;
+            for(var i=0;i<breaks.length;i++){
+              if(breaks[i]>offset && breaks[i]<=hardLimit) cut=breaks[i];
+            }
+            // If a single card is taller than a page (rare, very long question),
+            // fall back to a hard cut so we never loop forever.
+            if(cut<0){
+              // is there a card that STARTS in this page but ends beyond it?
+              var startedCard=-1;
+              for(var j=0;j<cardTops.length;j++){
+                if(cardTops[j]>offset && cardTops[j]<hardLimit){ startedCard=cardTops[j]; break; }
+              }
+              cut = (startedCard>offset+40) ? startedCard : hardLimit; // break before the oversize card if possible
+            }
+            slices.push({from:offset,to:Math.round(cut)});
+            offset=Math.round(cut);
+          }
+
+          var totalPages=slices.length;
+          for(var s=0;s<slices.length;s++){
+            var from=slices[s].from, to=slices[s].to, hpx=to-from;
             var slice=document.createElement("canvas");
             slice.width=canvas.width; slice.height=hpx;
             var ctx=slice.getContext("2d");
             ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,slice.width,slice.height);
-            ctx.drawImage(canvas, 0, offset, canvas.width, hpx, 0, 0, canvas.width, hpx);
+            ctx.drawImage(canvas, 0, from, canvas.width, hpx, 0, 0, canvas.width, hpx);
             var sliceImg=slice.toDataURL("image/jpeg", 0.92);
             var sliceHpt=hpx/pxPerPt;
-            if(pageNo>1) doc.addPage();
+            if(s>0) doc.addPage();
             doc.addImage(sliceImg, "JPEG", margin, margin, imgW, sliceHpt);
-            // footer on every page
             doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(148,163,184);
             doc.text("Just Mock Tests, for self-practice only, not a certification", margin, pageH-16);
-            doc.text("Page "+pageNo+" of "+totalPages, pageW-margin, pageH-16, {align:"right"});
-            offset+=hpx;
+            doc.text("Page "+(s+1)+" of "+totalPages, pageW-margin, pageH-16, {align:"right"});
           }
 
           hideLoader();
