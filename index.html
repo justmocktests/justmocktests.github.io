@@ -17,7 +17,15 @@
     }
     *{margin:0;padding:0;box-sizing:border-box}
     html{scroll-behavior:smooth}
-    body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;line-height:1.55}
+    body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;line-height:1.55;overflow-x:hidden}
+    /* Long unbreakable strings (URLs, formulas, IDs) must never widen the page
+       or push content off screen. Applies everywhere question/answer text appears. */
+    .question-text,.option,.option span,.q-count,
+    .review-card,.review-card .qh,.review-card .row,.expl,
+    .quiz-topbar .subj,.quiz-topbar .who,.source-tag,
+    .score-meta div,.banner-msg,.eco-box{
+      overflow-wrap:anywhere;word-break:break-word;min-width:0
+    }
     .container{max-width:1200px;margin:auto;padding:18px 24px}
 
     /* ===== NOTICE BOARD HERO ===== */
@@ -356,6 +364,35 @@
       .card-grid{grid-template-columns:1fr}
       #countdownNum{font-size:96px}
       .quiz-topbar .subj{order:3;flex-basis:100%}
+
+      /* ---- QUIZ ON PHONES ----
+         Nothing may be clipped. The "Asked in" badge leaves its absolute corner
+         and sits in the normal flow above the question, so it can never sit on
+         top of the question number or the question text however long it is. */
+      .container{padding:14px 12px}
+      .question-card{padding:16px 14px}
+      .source-tag{position:static;display:inline-block;max-width:100%;
+        text-align:left;margin:0 0 10px;font-size:11px;white-space:normal}
+      .q-count{font-size:13px;margin-bottom:8px}
+      .question-text{font-size:17px;line-height:1.5;margin-bottom:14px}
+      .option{padding:13px 12px;margin-bottom:10px;gap:10px;font-size:15px}
+      .option .mark{width:22px;height:22px;font-size:12px}
+      .question-image{max-height:220px}
+      .quiz-wrapper{max-width:100%}
+      .quiz-topbar{padding:11px 13px;gap:8px}
+      .quiz-topbar .who{min-width:0;font-size:14px;flex:1 1 auto}
+      .quiz-topbar .subj{font-size:14px;order:3;flex-basis:100%;text-align:center}
+      .timer-wrap{min-width:0;gap:6px}
+      .timer{font-size:20px}
+      /* palette: smaller cells so a 100 question paper still fits the width */
+      .palette{grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:6px;padding:12px}
+      .palette-btn{height:36px;font-size:13px}
+      .palette-legend{gap:10px;font-size:11px}
+      /* scorecard readability on phones */
+      .pdf-area{padding:16px 14px}
+      .review-card{padding:14px 12px}
+      .score-head h1{font-size:26px}
+      .modal-content{padding:16px}
     }
   </style>
 </head>
@@ -886,8 +923,16 @@
     function prev(){ if(APP.qIndex>0){APP.qIndex--;saveSession();showQuestion();} }
     function jump(i){ APP.qIndex=i; saveSession(); showQuestion(); }
 
+    // Guard against an accidental refresh or tab close mid test. The session is
+    // saved every second and can be resumed, but a confirm prompt avoids the
+    // scare entirely. Cleared as soon as the test is submitted.
+    function guardUnload(on){
+      window.onbeforeunload = on ? function(e){ e.preventDefault(); e.returnValue=""; return ""; } : null;
+    }
+
     function startTimer(){
       if(APP.timer) clearInterval(APP.timer);
+      guardUnload(true);
       tick();
       APP.timer=setInterval(function(){ APP.countdown--; tick(); saveSession(); if(APP.countdown<=0){clearInterval(APP.timer);doSubmit();} },1000);
     }
@@ -913,6 +958,7 @@
 
     function doSubmit(){
       if(APP.timer) clearInterval(APP.timer);
+      guardUnload(false);
       showLoader("Scoring your test...");
       APP.endClock=new Date().toISOString();
       var str=""; for(var i=0;i<APP.questions.length;i++){ var a=APP.answers[i]; str+=(a==="A"||a==="B"||a==="C"||a==="D")?a:"X"; }
