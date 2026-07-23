@@ -312,6 +312,8 @@
     .expl{background:#f8fafc;border-left:3px solid var(--brand);padding:10px 12px;border-radius:8px;margin-top:8px;font-size:14px;color:var(--ink-soft)}
     .eco-box{background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;padding:18px;margin-top:22px;text-align:center}
     .eco-box a{color:#b45309;font-weight:800;word-break:break-all}
+    .mar-box{background:#ede9fe;border-color:#c4b5fd;line-height:1.7;font-weight:600;color:#4c1d95}
+    .mar-box a{color:#5b21b6}
 
     .loader-overlay{position:fixed;inset:0;background:rgba(241,245,249,.85);z-index:99999;display:none;justify-content:center;align-items:center}
     .loader-overlay.active{display:flex}
@@ -800,7 +802,7 @@
       var sel=[]; document.querySelectorAll(".customTopic").forEach(function(c){ if(c.checked) sel.push(c.value); });
       if(!sel.length){ notify("Select at least one exam or topic.","error"); return; }
       APP.topics=sel; APP.mode="CUSTOM"; APP.length=Number($("customLength").value);
-      APP.subjectLabel="Custom: "+sel.map(labelForSheet).join(", "); APP.sheetName="(custom)";
+      APP.subjectLabel="Custom Test"; APP.sheetName="(custom)";
       closeModal(); setTimeout(gateway,250);
     }
 
@@ -954,9 +956,40 @@
         return datePart+" - "+fmtTime(iso);
       }catch(e){ return "-"; }
     }
-    function isEconomics(){
-      var s=(APP.sheetName||"").toLowerCase(), l=(APP.subjectLabel||"").toLowerCase();
-      return s.indexOf("economics")!==-1 || l.indexOf("economics")!==-1;
+    // Look at every sheet involved in this test, not just the display label, so
+    // detection keeps working when a custom test is labelled simply "Custom Test".
+    function subjectsInTest(){
+      var parts=[];
+      if(APP.sheetName) parts.push(APP.sheetName);
+      if(APP.subjectLabel) parts.push(APP.subjectLabel);
+      (APP.topics||[]).forEach(function(t){
+        parts.push(t);
+        try{ parts.push(labelForSheet(t)); }catch(e){}
+      });
+      return parts.join(" ").toLowerCase();
+    }
+    function isEconomics(){ return subjectsInTest().indexOf("economics")!==-1; }
+    function isMarathi(){ return subjectsInTest().indexOf("marathi")!==-1; }
+
+    var CHAN_ECO="https://www.youtube.com/@EcoWisdombyDrAditi";
+    var CHAN_MAR="https://www.youtube.com/@RahasyaUlgadtana";
+    var MAR_LINE1="अभ्यासाचा ताण घालवण्यासाठी थोडा विरंगुळा हवाय?";
+    var MAR_LINE2="या चॅनेलवर घेऊन आलो आहोत काही थरारक आणि रोमहर्षक रहस्यकथा... नक्की ऐका! \uD83C\uDF99\uFE0F रहस्य आणि थराराची एक वेगळीच सफर!";
+
+    // Channel boxes shown under the scorecard. Both appear, stacked, if a custom
+    // test mixes Economics and Marathi. data-jmt-link lets the image PDF place a
+    // real clickable hotspot over each link.
+    function channelBoxes(){
+      var h="";
+      if(isEconomics()){
+        h+='<div class="eco-box">For further help in economics you can visit our esteemed Faculty\'s channel<br>'+
+           '<a href="'+CHAN_ECO+'" target="_blank" rel="noopener" data-jmt-link="'+CHAN_ECO+'">'+CHAN_ECO+'</a></div>';
+      }
+      if(isMarathi()){
+        h+='<div class="eco-box mar-box">'+esc(MAR_LINE1)+'<br>'+esc(MAR_LINE2)+'<br>'+
+           '<a href="'+CHAN_MAR+'" target="_blank" rel="noopener" data-jmt-link="'+CHAN_MAR+'">'+CHAN_MAR+'</a></div>';
+      }
+      return h;
     }
 
     function renderScorecard(){
@@ -998,10 +1031,7 @@
           (item.explanation?'<div class="expl"><b>Explanation:</b> '+esc(item.explanation)+'</div>':'')+'</div>';
       });
 
-      if(isEconomics()){
-        h+='<div class="eco-box">For further help in economics you can visit our esteemed Faculty\'s channel<br>'+
-           '<a href="https://www.youtube.com/@EcoWisdombyDrAditi" target="_blank" rel="noopener">https://www.youtube.com/@EcoWisdombyDrAditi</a></div>';
-      }
+      h+=channelBoxes();
 
       h+='</div><div style="display:flex;gap:10px;margin-top:18px"><button class="btn btn-primary" onclick="JMT.pdf()">Download PDF</button>'+
         '<button class="btn btn-secondary" onclick="JMT.home()">Back to Home</button></div></div></div>';
@@ -1030,7 +1060,9 @@
     }
 
     function pdf(){
-      if(scorecardIsDevanagari()) pdfImage();
+      // Marathi scorecards carry a Devanagari channel message, so they must use
+      // the image path even if every question happened to be Latin script.
+      if(scorecardIsDevanagari() || isMarathi()) pdfImage();
       else pdfText();
     }
 
@@ -1049,12 +1081,25 @@
       // Capture the safe cut points BEFORE rasterising: the boundaries between
       // question cards, measured relative to the scorecard top. A page break may
       // land only at one of these gaps, so a question is never split across pages.
-      var areaTop=area.getBoundingClientRect().top;
+      var areaRect=area.getBoundingClientRect();
+      var areaTop=areaRect.top, areaLeft=areaRect.left;
       var cardBreaks=[];
-      var cards=area.querySelectorAll(".review-card");
+      var cards=area.querySelectorAll(".review-card, .eco-box");
       for(var ci=0; ci<cards.length; ci++){
         var r=cards[ci].getBoundingClientRect();
         cardBreaks.push({ top:r.top-areaTop, bottom:r.bottom-areaTop });
+      }
+      // Channel links: remember where each sits so we can lay a real clickable
+      // PDF hotspot over the captured image at exactly that spot.
+      var linkSpots=[];
+      var linkEls=area.querySelectorAll("[data-jmt-link]");
+      for(var li=0; li<linkEls.length; li++){
+        var lr=linkEls[li].getBoundingClientRect();
+        linkSpots.push({
+          url: linkEls[li].getAttribute("data-jmt-link"),
+          top: lr.top-areaTop, bottom: lr.bottom-areaTop,
+          left: lr.left-areaLeft, right: lr.right-areaLeft
+        });
       }
 
       html2canvas(area, {scale:2, backgroundColor:"#ffffff", useCORS:true, logging:false})
@@ -1112,6 +1157,21 @@
             var sliceHpt=hpx/pxPerPt;
             if(s>0) doc.addPage();
             doc.addImage(sliceImg, "JPEG", margin, margin, imgW, sliceHpt);
+
+            // Lay real clickable hotspots over any channel link on this page.
+            var cssToPt=imgW/areaRect.width;   // css px -> PDF points
+            for(var L=0; L<linkSpots.length; L++){
+              var sp=linkSpots[L];
+              var lt=sp.top*cssToCanvas, lb=sp.bottom*cssToCanvas;
+              if(lt>=from && lb<=to){
+                var lx=margin + sp.left*cssToPt;
+                var ly=margin + (lt-from)/pxPerPt;
+                var lw=(sp.right-sp.left)*cssToPt;
+                var lh=(lb-lt)/pxPerPt;
+                doc.link(lx, ly, lw, lh, {url: sp.url});
+              }
+            }
+
             doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(148,163,184);
             doc.text("Just Mock Tests, for self-practice only, not a certification", margin, pageH-16);
             doc.text("Page "+(s+1)+" of "+totalPages, pageW-margin, pageH-16, {align:"right"});
@@ -1287,7 +1347,7 @@
         doc.setTextColor(120,53,15); doc.setFont("helvetica","bold"); doc.setFontSize(10);
         doc.text("For further help in economics you can visit our esteemed Faculty's channel:", margin+10, y+18);
         doc.setTextColor(20,80,190); doc.setFont("helvetica","normal");
-        var ecoUrl="https://www.youtube.com/@EcoWisdombyDrAditi";
+        var ecoUrl=CHAN_ECO;
         if(typeof doc.textWithLink==="function"){
           doc.textWithLink(ecoUrl, margin+10, y+34, {url:ecoUrl});
         } else {
