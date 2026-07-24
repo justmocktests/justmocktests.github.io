@@ -6,6 +6,7 @@
   <title>Just Mock Tests - Online Practice Exams</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <style>
     :root{
       --ink:#0f172a; --ink-soft:#334155; --muted:#64748b;
@@ -445,7 +446,7 @@
       mode:"", exam:"", topics:[], length:0, subjectLabel:"", sheetName:"",
       examToken:null, questions:[], qIndex:0, answers:{}, visited:{},
       startTime:null, startClock:null, countdown:0, timer:null, result:null, pending:null,
-      payTimer:null
+      payTimer:null, payToken:null
     };
 
     document.addEventListener("DOMContentLoaded", function(){ recoverSession(); loadPortalData(); });
@@ -687,88 +688,74 @@
       setTimeout(gatewayPay,250);
     }
 
-    /* ============ PAYMENT SHELL ============ */
-    /* In sandbox: pay() skips straight to showRules.
-       When live keys arrive, SANDBOX_MODE=false and this shell runs.
-       Browser: blurred QR + Show QR + 120s timer. Phone: Pay via UPI button.
-       The "Simulate Payment Success" button below stands in for the real
-       Razorpay confirmation and is only reachable in non-sandbox testing. */
+    /* ============ PAYMENT (Razorpay) ============
+       The amount is created and locked SERVER side. The browser only ever
+       receives an order id, so the payable amount cannot be edited by anyone.
+       Razorpay's own checkout shows a live QR on desktop and hands off to the
+       UPI app on a phone, with the amount fixed in both cases. */
     function gatewayPay(){
-      if(APP.payTimer){ clearInterval(APP.payTimer); APP.payTimer=null; }
-      var amt=price(APP.length);
-      if(isMobile()){
-        openModal("Pay to Start",
-          '<div class="price-box">Amount: Rs '+amt+'</div>'+
-          '<p style="text-align:center;color:var(--muted);font-size:14px;margin-bottom:14px">Tap below to pay securely through your UPI app. The amount cannot be edited.</p>'+
-          '<button class="btn btn-success full-width" onclick="JMT.payUPI()">Pay using UPI</button>'+
-          '<div class="pay-note">Only online UPI payments are accepted.</div>'+
-          '<button class="btn btn-secondary full-width" style="margin-top:16px" onclick="JMT.simulatePay()">Simulate Payment Success (test)</button>');
-      } else {
-        openModal("Pay to Start",
-          '<div class="price-box">Amount: Rs '+amt+'</div>'+
-          '<div class="qr-blur-wrap">'+
-            '<div id="qrBox" class="qr-box"><div class="qr-placeholder qr-blur">QR code appears here</div></div>'+
-            '<div id="qrCover" class="qr-cover"><button class="btn btn-primary" onclick="JMT.showQR()">Show QR</button></div>'+
-          '</div>'+
-          '<div id="payTimer" class="pay-timer"></div>'+
-          '<div class="pay-note">Only online QR code payments are accepted.</div>'+
-          '<button class="btn btn-secondary full-width" style="margin-top:16px" onclick="JMT.simulatePay()">Simulate Payment Success (test)</button>');
-      }
-    }
-
-    function showQR(){
-      var cover=$("qrCover"), box=$("qrBox");
-      if(cover) cover.style.display="none";
-      // Sandbox: show a visible QR-style placeholder so the flow is concrete.
-      // Live: this is replaced by the real Razorpay QR image.
-      if(box) box.innerHTML=sampleQrSvg();
-      startPayCountdown(120);
-    }
-
-    function sampleQrSvg(){
-      // A deterministic QR-looking grid (placeholder only, not a real payable code).
-      var n=21, cell=200/n, rects="";
-      // finder squares
-      function finder(ox,oy){
-        return '<rect x="'+(ox*cell)+'" y="'+(oy*cell)+'" width="'+(7*cell)+'" height="'+(7*cell)+'" fill="#111"/>'+
-               '<rect x="'+((ox+1)*cell)+'" y="'+((oy+1)*cell)+'" width="'+(5*cell)+'" height="'+(5*cell)+'" fill="#fff"/>'+
-               '<rect x="'+((ox+2)*cell)+'" y="'+((oy+2)*cell)+'" width="'+(3*cell)+'" height="'+(3*cell)+'" fill="#111"/>';
-      }
-      var seed=987654321;
-      for(var yy=0; yy<n; yy++){
-        for(var xx=0; xx<n; xx++){
-          var inFinder=((xx<8&&yy<8)||(xx>n-9&&yy<8)||(xx<8&&yy>n-9));
-          if(inFinder) continue;
-          seed=(seed*1103515245+12345)&0x7fffffff;
-          if((seed>>7)%2===0) rects+='<rect x="'+(xx*cell)+'" y="'+(yy*cell)+'" width="'+cell+'" height="'+cell+'" fill="#111"/>';
+      showLoader("Setting up secure payment...");
+      var params={ count:APP.length, mode:APP.mode, sheetName:APP.exam||"",
+                   name:APP.candidateName, subject:APP.subjectLabel };
+      if(APP.mode==="CUSTOM") params.topics=APP.topics;
+      api("createOrder",params).then(function(o){
+        if(!o||o.error){
+          notify(o&&o.message?o.message:"Could not start the payment.","error");
+          return;
         }
+        if(typeof Razorpay==="undefined"){
+          notify("Payment library did not load. Please refresh and try again.","error");
+          return;
+        }
+        openRazorpay(o);
+      });
+    }
+
+    function openRazorpay(o){
+      var opts={
+        key:o.keyId,
+        order_id:o.orderId,
+        amount:o.amount,          // display only, the order is what binds
+        currency:o.currency||"INR",
+        name:(APP.config.SITE_NAME||"Just Mock Tests"),
+        description:APP.length+" question test, "+(APP.subjectLabel||""),
+        prefill:{ name:APP.candidateName||"" },
+        theme:{ color:"#2563eb" },
+        modal:{
+          ondismiss:function(){
+            notify("Payment was cancelled. You have not been charged.","info");
+          }
+        },
+        handler:function(resp){
+          showLoader("Confirming your payment...");
+          api("verifyPayment",{
+            orderId:resp.razorpay_order_id,
+            paymentId:resp.razorpay_payment_id,
+            signature:resp.razorpay_signature
+          }).then(function(v){
+            if(!v||v.error||!v.payToken){
+              notify(v&&v.message?v.message:"We could not confirm your payment. If money was deducted, please contact us and it will be refunded.","error");
+              return;
+            }
+            APP.payToken=v.payToken;
+            notify("Payment successful.","success");
+            setTimeout(showRules,300);
+          });
+        }
+      };
+      try{
+        var rzp=new Razorpay(opts);
+        rzp.on("payment.failed",function(r){
+          var m=(r&&r.error&&r.error.description)?r.error.description:"The payment did not go through.";
+          notify(m+" You have not been charged.","error");
+        });
+        rzp.open();
+      }catch(e){
+        console.error(e);
+        notify("Could not open the payment window. Please try again.","error");
       }
-      return '<svg viewBox="0 0 200 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">'+
-             '<rect width="200" height="200" fill="#fff"/>'+rects+finder(0,0)+finder(n-7,0)+finder(0,n-7)+
-             '</svg>';
     }
 
-    function startPayCountdown(sec){
-      var el=$("payTimer");
-      if(APP.payTimer) clearInterval(APP.payTimer);
-      function paint(){ if(!el)return; var m=Math.floor(sec/60),s=sec%60; el.textContent="QR valid for "+(m<10?"0":"")+m+":"+(s<10?"0":"")+s; }
-      paint();
-      APP.payTimer=setInterval(function(){
-        sec--; paint();
-        if(sec<=0){ clearInterval(APP.payTimer); APP.payTimer=null; closeModal(); notify("Payment time expired. Please try again.","info"); setTimeout(home,400); }
-      },1000);
-    }
-
-    function payUPI(){
-      // Placeholder for the real Razorpay UPI intent link (built when keys arrive).
-      notify("UPI payment will open your app once live keys are added.","info");
-      // In real integration: window.location = upiIntentUrl; then verify via Razorpay.
-    }
-
-    function simulatePay(){
-      if(APP.payTimer){ clearInterval(APP.payTimer); APP.payTimer=null; }
-      notify("Payment successful (test).","success"); closeModal(); setTimeout(showRules,400);
-    }
 
     /* ============ RULES & REGULATIONS ============ */
     function showRules(){
@@ -789,6 +776,7 @@
       if(!allowedToStart()) return;
       showLoader("Preparing your paper...");
       var params=(APP.mode==="CUSTOM")?{mode:"CUSTOM",topics:APP.topics,count:APP.length,name:APP.candidateName,subject:APP.subjectLabel}:{mode:"EXAM",sheetName:APP.exam,count:APP.length,name:APP.candidateName,subject:APP.subjectLabel};
+      if(APP.payToken) params.payToken=APP.payToken;
       api("startExam",params).then(function(data){
         if(!data||data.error){ notify(data&&data.message?data.message:"Could not start the test.","error"); return; }
         if(!data.questions||!data.questions.length){ notify("No questions available for this selection yet.","error"); return; }
@@ -1130,7 +1118,11 @@
       var areaRect=area.getBoundingClientRect();
       var areaTop=areaRect.top, areaLeft=areaRect.left;
       var cardBreaks=[];
-      var cards=area.querySelectorAll(".review-card, .eco-box");
+      // Every top-level block of the scorecard is atomic: the coloured header,
+      // the candidate meta, the banner, the score/accuracy/time stats, the
+      // "Question Review" heading, each question card and each channel box.
+      // A page break may only fall between blocks, never through one.
+      var cards=area.children;
       for(var ci=0; ci<cards.length; ci++){
         var r=cards[ci].getBoundingClientRect();
         cardBreaks.push({ top:r.top-areaTop, bottom:r.bottom-areaTop });
@@ -1456,7 +1448,7 @@
     function startFresh(){ clearSession(); APP.questions=[]; APP.examToken=null; }
     function home(){ location.reload(); }
 
-    window.JMT={ pick:pick, len:len, pay:pay, simulatePay:simulatePay, showQR:showQR, payUPI:payUPI, openTerms:openTerms, closeModal2:closeModal2,
+    window.JMT={ pick:pick, len:len, pay:pay, openTerms:openTerms, closeModal2:closeModal2,
       showRules:showRules, acceptRules:acceptRules,
       customBuilder:customBuilder, customGo:customGo, answer:answer, next:next, prev:prev, jump:jump,
       confirmSubmit:confirmSubmit, finalSubmit:finalSubmit, pdf:pdf, policy:policy, closeModal:closeModal,
