@@ -184,7 +184,15 @@
 
     /* QUOTE strip (replaces sandbox banner spot) */
     .quote-strip{background:#fff;border:1px solid var(--line);border-left:5px solid var(--theme);padding:14px 20px;margin-bottom:16px;border-radius:12px;text-align:center;min-height:66px;display:flex;flex-direction:column;justify-content:center;transition:border-color 1.2s ease}
-    /* LIVE STAT BAR (same width as the quote strip, tasteful count-up) */
+    /* DEMO VIDEO (below the stat bar, above Customise Your Test) */
+    .demo-video{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 16px 14px;margin-bottom:16px;box-shadow:var(--shadow)}
+    .demo-title{font-weight:800;font-size:16px;color:var(--ink);text-align:center;margin-bottom:12px;line-height:1.35}
+    .demo-frame{position:relative;width:100%;padding-top:56.25%;border-radius:10px;overflow:hidden;background:#000}
+    .demo-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+    @media (max-width:768px){
+      .demo-title{font-size:14.5px}
+      .demo-video{padding:12px 12px 10px}
+    }
     .stat-bar{display:flex;align-items:stretch;justify-content:space-between;gap:6px;
       background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;border-radius:12px;
       padding:16px 14px;margin-bottom:16px;box-shadow:var(--shadow);border:1px solid #0b1220}
@@ -627,7 +635,17 @@
       '</div><div class="container">';
       html+='<div class="quote-strip"><div id="quoteText" class="quote-text"></div><div id="quoteBy" class="quote-by"></div></div>';
       html+=statBarHtml();
-      html+='<div id="videoSlot"></div>';
+      html+='<div id="videoSlot">'+
+        '<div class="demo-video">'+
+          '<div class="demo-title">New Here ?? See this Video to see how an Actual Test Works ...</div>'+
+          '<div class="demo-frame">'+
+            '<iframe src="https://www.youtube-nocookie.com/embed/6Wnmdry5Tj8?rel=0&modestbranding=1&playsinline=1" '+
+              'title="Just Mock Tests demo" frameborder="0" '+
+              'allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" '+
+              'allowfullscreen loading="lazy"></iframe>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
       html+='<div class="custom-builder"><h2>Customise Your Test</h2>'+
         '<p>Mix questions from any combination of exams and topics into one custom paper.</p>'+
         '<button class="btn btn-primary full-width" onclick="JMT.customBuilder()">Create Custom Test</button></div>'+
