@@ -184,6 +184,23 @@
 
     /* QUOTE strip (replaces sandbox banner spot) */
     .quote-strip{background:#fff;border:1px solid var(--line);border-left:5px solid var(--theme);padding:14px 20px;margin-bottom:16px;border-radius:12px;text-align:center;min-height:66px;display:flex;flex-direction:column;justify-content:center;transition:border-color 1.2s ease}
+    /* LIVE STAT BAR (same width as the quote strip, tasteful count-up) */
+    .stat-bar{display:flex;align-items:stretch;justify-content:space-between;gap:6px;
+      background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;border-radius:12px;
+      padding:16px 14px;margin-bottom:16px;box-shadow:var(--shadow);border:1px solid #0b1220}
+    .stat-cell{flex:1 1 0;text-align:center;min-width:0;padding:2px 4px}
+    .stat-num{font-family:"Segoe UI",system-ui,sans-serif;font-weight:900;font-size:30px;line-height:1.05;
+      letter-spacing:.5px;color:#facc15;font-variant-numeric:tabular-nums}
+    .stat-label{margin-top:5px;font-size:11.5px;font-weight:700;letter-spacing:.3px;
+      text-transform:uppercase;color:#cbd5e1;line-height:1.25}
+    .stat-div{width:1px;background:rgba(255,255,255,.14);align-self:stretch;margin:4px 0}
+    @media (max-width:768px){
+      .stat-bar{flex-wrap:wrap;gap:10px;padding:14px 10px}
+      .stat-cell{flex:1 1 40%}
+      .stat-num{font-size:24px}
+      .stat-label{font-size:10.5px}
+      .stat-div{display:none}
+    }
     .quote-text{font-size:17px;font-style:italic;color:var(--ink-soft);font-weight:600;line-height:1.5}
     .quote-word{opacity:0;transition:opacity .18s ease}
     .quote-word.show{opacity:1}
@@ -242,6 +259,12 @@
 
     /* TRICOLOUR VARIANT BUTTONS */
     .variant-btn{width:100%;border:none;border-radius:12px;padding:16px 18px;font-weight:800;font-size:16px;cursor:pointer;margin-bottom:12px;transition:transform .12s ease,box-shadow .12s ease;font-family:inherit;box-shadow:0 3px 10px rgba(0,0,0,.12)}
+    .variant-btn.variant-sm{padding:12px 16px;font-size:14.5px;margin-bottom:9px}
+    .variant-info{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:14px}
+    .vi-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:3px 0}
+    .vi-key{font-size:13px;color:var(--muted);font-weight:600}
+    .vi-val{font-size:16px;font-weight:900;color:var(--theme);font-variant-numeric:tabular-nums}
+    .vi-val.vi-src{font-size:13px;color:#0f172a;text-align:right;font-weight:700}
     .variant-btn:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0,.2)}
     .variant-orange{background:#FF9933;color:#111111}
     .variant-white{background:#ffffff;color:#0a1a4f;border:1px solid #cbd5e1}
@@ -491,6 +514,54 @@
       });
     }
 
+    function statBarHtml(){
+      var t=(APP.portalData&&APP.portalData.totals)?APP.portalData.totals:null;
+      if(!t) return "";
+      function cell(val,label){
+        return '<div class="stat-cell">'+
+          '<div class="stat-num" data-target="'+(Number(val)||0)+'">0</div>'+
+          '<div class="stat-label">'+label+'</div></div>';
+      }
+      return '<div id="statBar" class="stat-bar">'+
+        cell(t.totalQuestions,"Total Question Bank")+
+        '<div class="stat-div"></div>'+
+        cell(t.examSubjects,"Full Mock Subjects")+
+        '<div class="stat-div"></div>'+
+        cell(t.individualTopics,"Individual Topics")+
+        '<div class="stat-div"></div>'+
+        cell(t.pastPapers,"Past Papers")+
+        '</div>';
+    }
+
+    // Roll each number up once when the bar scrolls into view, then hold.
+    function startStatCounters(){
+      var bar=$("statBar"); if(!bar) return;
+      var nums=bar.querySelectorAll(".stat-num");
+      var done=false;
+      function run(){
+        if(done) return; done=true;
+        nums.forEach(function(el){
+          var target=parseInt(el.getAttribute("data-target"),10)||0;
+          var dur=900, startT=null;
+          function step(ts){
+            if(!startT) startT=ts;
+            var p=Math.min((ts-startT)/dur,1);
+            // ease-out so it decelerates like a real counter settling
+            var eased=1-Math.pow(1-p,3);
+            el.textContent=Math.round(target*eased).toLocaleString("en-IN");
+            if(p<1) requestAnimationFrame(step); else el.textContent=target.toLocaleString("en-IN");
+          }
+          requestAnimationFrame(step);
+        });
+      }
+      if("IntersectionObserver" in window){
+        var io=new IntersectionObserver(function(entries){
+          entries.forEach(function(e){ if(e.isIntersecting){ run(); io.disconnect(); } });
+        },{threshold:0.4});
+        io.observe(bar);
+      } else { run(); }
+    }
+
     function renderHome(){
       var c=APP.config, name=c.SITE_NAME||"Just Mock Tests";
       var tag=c.TAGLINE||"Real Mock Tests without any Trouble - No ads and No Spam";
@@ -543,6 +614,8 @@
         '</div>'+
       '</div><div class="container">';
       html+='<div class="quote-strip"><div id="quoteText" class="quote-text"></div><div id="quoteBy" class="quote-by"></div></div>';
+      html+=statBarHtml();
+      html+='<div id="videoSlot"></div>';
       html+='<div class="custom-builder"><h2>Customise Your Test</h2>'+
         '<p>Mix questions from any combination of exams and topics into one custom paper.</p>'+
         '<button class="btn btn-primary full-width" onclick="JMT.customBuilder()">Create Custom Test</button></div>'+
@@ -552,6 +625,7 @@
       $("app").innerHTML=html;
       renderCards("examGrid",APP.portalData.exams,"EXAM","E");
       renderCards("topicGrid",APP.portalData.topics,"TOPIC","T");
+      startStatCounters();
       renderFooter();
       startThemeCycle();
       startQuotes();
@@ -630,12 +704,31 @@
       return sheet;
     }
 
+    function tileInfo(sheet){
+      var lists=[APP.portalData.exams,APP.portalData.topics];
+      for(var i=0;i<lists.length;i++){ var arr=lists[i]||[]; for(var j=0;j<arr.length;j++){ if(arr[j].sheet===sheet) return arr[j]; } }
+      return null;
+    }
+    function variantInfoHtml(sheet){
+      var info=tileInfo(sheet);
+      if(!info) return "";
+      var count=(info.count!=null)?info.count:0;
+      var h='<div class="variant-info">'+
+        '<div class="vi-row"><span class="vi-key">Total Question Bank</span><span class="vi-val">'+Number(count).toLocaleString("en-IN")+'</span></div>';
+      if(info.sources&&info.sources.length){
+        h+='<div class="vi-row"><span class="vi-key">Past Papers</span><span class="vi-val vi-src">'+info.sources.map(esc).join(", ")+'</span></div>';
+      }
+      h+='</div>';
+      return h;
+    }
+
     function pick(sheet,mode){
       APP.exam=sheet; APP.topics=[sheet]; APP.mode=mode; APP.subjectLabel=labelForSheet(sheet); APP.sheetName=sheet;
       openModal("Choose Test Variant (No. of Questions)",
-        '<button class="variant-btn variant-orange" onclick="JMT.len(25)">25 Questions, Rs '+price(25)+'</button>'+
-        '<button class="variant-btn variant-white" onclick="JMT.len(50)">50 Questions, Rs '+price(50)+'</button>'+
-        '<button class="variant-btn variant-olive" onclick="JMT.len(100)">100 Questions, Rs '+price(100)+'</button>');
+        variantInfoHtml(sheet)+
+        '<button class="variant-btn variant-sm variant-orange" onclick="JMT.len(25)">25 Questions, Rs '+price(25)+'</button>'+
+        '<button class="variant-btn variant-sm variant-white" onclick="JMT.len(50)">50 Questions, Rs '+price(50)+'</button>'+
+        '<button class="variant-btn variant-sm variant-olive" onclick="JMT.len(100)">100 Questions, Rs '+price(100)+'</button>');
     }
     function len(n){ APP.length=n; closeModal(); setTimeout(gateway,250); }
     function price(n){ var p={25:Number(APP.config.PRICE_25||10),50:Number(APP.config.PRICE_50||20),100:Number(APP.config.PRICE_100||40)}; return p[n]||0; }
