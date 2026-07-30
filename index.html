@@ -265,6 +265,10 @@
     .vi-key{font-size:13px;color:var(--muted);font-weight:600}
     .vi-val{font-size:16px;font-weight:900;color:var(--theme);font-variant-numeric:tabular-nums}
     .vi-val.vi-src{font-size:13px;color:#0f172a;text-align:right;font-weight:700}
+    .vi-left{display:flex;align-items:baseline;gap:10px;padding:2px 0 4px}
+    .vi-left .vi-key{font-size:13px}
+    .vi-val.vi-left-num{font-size:20px;font-weight:900;color:var(--theme);font-variant-numeric:tabular-nums}
+    .vi-val.vi-red{color:#dc2626}
     /* Past-paper signboards: same look as the "Asked in" badge, wrapping left to right */
     .vi-papers{padding:6px 0 2px}
     .vi-papers-key{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:8px}
@@ -720,14 +724,21 @@
     function variantInfoHtml(sheet){
       var info=tileInfo(sheet);
       if(!info) return "";
-      var count=(info.count!=null)?info.count:0;
-      var h='<div class="variant-info">'+
-        '<div class="vi-row"><span class="vi-key">Total Question Bank</span><span class="vi-val">'+Number(count).toLocaleString("en-IN")+'</span></div>';
-      if(info.sources&&info.sources.length){
-        h+='<div class="vi-papers"><div class="vi-papers-key">Past Papers</div>'+
+      var count=Number((info.count!=null)?info.count:0).toLocaleString("en-IN");
+      var hasPapers=info.sources&&info.sources.length;
+      var h='<div class="variant-info">';
+      if(hasPapers){
+        // Everything on the left: number sits beside its label, chips below.
+        h+='<div class="vi-left"><span class="vi-key">Total Question Bank</span> '+
+           '<span class="vi-val vi-left-num">'+count+'</span></div>'+
+           '<div class="vi-papers"><div class="vi-papers-key">Past Papers</div>'+
            '<div class="vi-chips">'+
            info.sources.map(function(s){ return '<span class="paper-chip">'+esc(s)+'</span>'; }).join("")+
            '</div></div>';
+      } else {
+        // No papers: number alone, pushed to the right in red.
+        h+='<div class="vi-row"><span class="vi-key">Total Question Bank</span>'+
+           '<span class="vi-val vi-red">'+count+'</span></div>';
       }
       h+='</div>';
       return h;
