@@ -242,7 +242,20 @@
     .custom-builder p{color:var(--muted);margin-bottom:16px}
     .topic-group-title{font-weight:800;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px}
     .topic-checklist{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
-    .topic-item{background:#f8fafc;border-radius:10px;padding:12px;border:1px solid var(--line);cursor:pointer;display:flex;align-items:center;gap:10px;transition:.15s}
+    .topic-item{background:#f8fafc;border-radius:10px;padding:12px;border:1px solid var(--line);cursor:pointer;display:flex;align-items:center;gap:10px;transition:.15s;position:relative}
+    /* hover cloud showing question bank strength and past papers */
+    .cb-has-cloud{overflow:visible}
+    .cb-info{margin-left:auto;flex:0 0 auto;width:20px;height:20px;border-radius:50%;background:var(--theme);color:#fff;
+      font-size:12px;font-weight:800;font-style:italic;display:flex;align-items:center;justify-content:center;cursor:help}
+    .cb-cloud{position:absolute;bottom:calc(100% + 8px);right:0;z-index:50;min-width:200px;max-width:280px;
+      background:#0f172a;color:#fff;border-radius:10px;padding:11px 13px;box-shadow:0 8px 24px rgba(0,0,0,.28);
+      opacity:0;visibility:hidden;transform:translateY(4px);transition:opacity .15s ease,transform .15s ease;pointer-events:none}
+    .cb-cloud::after{content:"";position:absolute;top:100%;right:16px;border:7px solid transparent;border-top-color:#0f172a}
+    .cb-has-cloud:hover .cb-cloud,.cb-cloud.cb-open{opacity:1;visibility:visible;transform:translateY(0)}
+    .cb-cloud-row{display:flex;justify-content:space-between;gap:12px;padding:2px 0;font-size:12.5px}
+    .cb-cloud-k{color:#cbd5e1;font-weight:600}
+    .cb-cloud-v{color:#facc15;font-weight:800;text-align:right}
+    .cb-cloud-papers .cb-cloud-v{color:#fff;font-weight:700;font-size:12px}
     .topic-item:hover{border-color:var(--brand);background:var(--brand-soft)}
     .topic-item input{cursor:pointer;width:16px;height:16px;flex:none}
     .topic-item label{cursor:pointer;font-size:14px}
@@ -936,9 +949,22 @@
       openModal("Custom Test Builder",html);
     }
     function cbItem(t){
-      return '<div class="topic-item" onclick="var c=this.querySelector(\'input\');c.checked=!c.checked;">'+
+      var count=(t.count!=null)?t.count:0;
+      var cloud='<div class="cb-cloud">'+
+        '<div class="cb-cloud-row"><span class="cb-cloud-k">Question Bank</span><span class="cb-cloud-v">'+Number(count).toLocaleString("en-IN")+'</span></div>';
+      if(t.sources&&t.sources.length){
+        var ordered=t.sources.slice().sort(function(a,b){
+          function yr(s){ var m=String(s).match(/\d{4}/); return m?parseInt(m[0],10):0; }
+          var ya=yr(a), yb=yr(b); if(ya!==yb) return ya-yb; return String(a).localeCompare(String(b));
+        });
+        cloud+='<div class="cb-cloud-row cb-cloud-papers"><span class="cb-cloud-k">Past Papers</span><span class="cb-cloud-v">'+ordered.map(esc).join(", ")+'</span></div>';
+      }
+      cloud+='</div>';
+      return '<div class="topic-item cb-has-cloud" onclick="var c=this.querySelector(\'input\');c.checked=!c.checked;">'+
              '<input type="checkbox" class="customTopic" value="'+esc(t.sheet)+'" onclick="event.stopPropagation()">'+
-             '<label>'+esc(t.label)+'</label></div>';
+             '<label>'+esc(t.label)+'</label>'+
+             '<span class="cb-info" onclick="event.stopPropagation();var cl=this.parentElement.querySelector(\'.cb-cloud\');var open=cl.classList.contains(\'cb-open\');document.querySelectorAll(\'.cb-cloud.cb-open\').forEach(function(o){o.classList.remove(\'cb-open\');});if(!open)cl.classList.add(\'cb-open\');">i</span>'+
+             cloud+'</div>';
     }
     function customGo(){
       var sel=[]; document.querySelectorAll(".customTopic").forEach(function(c){ if(c.checked) sel.push(c.value); });
